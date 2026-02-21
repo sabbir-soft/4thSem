@@ -450,8 +450,9 @@ function createWrittenAccordion(item, idx) {
 
 function toggleAccordion(header, body) {
     const isOpen = body.classList.contains('open');
+    const accordion = header.closest('.q-accordion');
 
-    // Close all others
+    // Close all others first
     document.querySelectorAll('#question-display .q-body.open').forEach(b => {
         b.classList.remove('open');
         b.previousElementSibling?.classList.remove('active');
@@ -461,11 +462,44 @@ function toggleAccordion(header, body) {
     if (!isOpen) {
         body.classList.add('open');
         header.classList.add('active');
-        header.closest('.q-accordion')?.classList.add('is-open');
-        setTimeout(() => {
-            const top = header.getBoundingClientRect().top + window.scrollY - 80;
-            window.scrollTo({ top, behavior: 'smooth' });
-        }, 200);
+        accordion?.classList.add('is-open');
+
+        // Smart scroll: after content expands, ensure the header stays in view
+        // We wait for the CSS transition to complete (max-height animates)
+        const stickyBarH = (document.getElementById('top-sticky-bar')?.offsetHeight || 60) + 12;
+
+        // Immediate check: if header is above viewport, scroll to it
+        const scrollToHeader = () => {
+            const rect = header.getBoundingClientRect();
+            const viewH = window.innerHeight;
+
+            // If header is above sticky bar, bring it into view
+            if (rect.top < stickyBarH) {
+                window.scrollTo({
+                    top: header.getBoundingClientRect().top + window.scrollY - stickyBarH,
+                    behavior: 'smooth'
+                });
+                return;
+            }
+
+            // If header is in view but the answer body will push it off screen,
+            // scroll just enough so header stays at top with padding
+            if (rect.top > stickyBarH + 8) {
+                // It's visible — check if after expansion it stays visible
+                // Scroll header to near top so user can read both Q and A
+                const targetTop = header.getBoundingClientRect().top + window.scrollY - stickyBarH - 8;
+                const currentTop = window.scrollY;
+                if (targetTop < currentTop) {
+                    window.scrollTo({ top: targetTop, behavior: 'smooth' });
+                }
+                // else: already in good position, don't scroll
+            }
+        };
+
+        // Run immediately and after transition for mobile
+        requestAnimationFrame(scrollToHeader);
+        setTimeout(scrollToHeader, 50);
+        setTimeout(scrollToHeader, 350);
     }
 }
 
@@ -1417,10 +1451,13 @@ function navigateQuestion(dir) {
         nextBody.classList.add('open');
         nextHeader.classList.add('active');
         accordions[nextIdx].classList.add('is-open');
-        setTimeout(() => {
-            const top = accordions[nextIdx].getBoundingClientRect().top + window.scrollY - 90;
+        const stickyBarH = (document.getElementById('top-sticky-bar')?.offsetHeight || 60) + 12;
+        const doScroll = () => {
+            const top = nextHeader.getBoundingClientRect().top + window.scrollY - stickyBarH;
             window.scrollTo({ top, behavior: 'smooth' });
-        }, 100);
+        };
+        requestAnimationFrame(doScroll);
+        setTimeout(doScroll, 50);
     }
 }
 
