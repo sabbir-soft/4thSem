@@ -5,59 +5,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#eef1f7" id="theme-color-meta">
     <title>৪র্থ সেমিস্টার প্রশ্নোত্তর সংকলন</title>
-
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-    <!-- SCROLL PROGRESS BAR -->
     <div id="scroll-progress-bar" aria-hidden="true"></div>
-
-    <!-- Background glow effect -->
     <div class="bg-glow" aria-hidden="true"></div>
 
     <!-- STICKY TOP BAR -->
     <div id="top-sticky-bar">
         <div class="inner">
-            <!-- Logo / Home -->
             <button id="home-button" class="neu-btn" aria-label="হোম পেজে যান">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                 <span class="hidden sm:inline">হোম</span>
             </button>
 
-            <!-- Global Search -->
             <div class="search-wrap">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
                 <input type="search" id="global-search" placeholder="প্রশ্ন খুঁজুন..." autocomplete="off" aria-label="প্রশ্ন খোঁজার জন্য টাইপ করুন">
                 <div id="search-results-dropdown" class="hidden" role="listbox"></div>
             </div>
 
-            <!-- Bookmarks button -->
             <button id="bookmarks-nav-btn" class="neu-btn" title="সংরক্ষিত প্রশ্ন">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path></svg>
                 <span id="bookmark-count-badge" class="hidden ml-1 text-xs font-bold text-amber-500">0</span>
             </button>
 
-            <!-- Syllabus button -->
             <button id="syllabus-button" class="neu-btn hidden sm:inline-flex">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path></svg>
                 <span>সিলেবাস</span>
             </button>
 
-            <!-- Shortcut help button -->
-            <button id="shortcut-help-btn" class="neu-btn hidden sm:inline-flex" title="কীবোর্ড শর্টকাট (?)">
+            <!-- Keyboard shortcut button — hidden on mobile, shown on desktop via CSS -->
+            <button id="shortcut-help-btn" class="neu-btn shortcut-desktop-only" title="কীবোর্ড শর্টকাট (?)">
                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path></svg>
             </button>
 
-            <!-- Font Size Toggle -->
             <button id="font-size-btn" class="font-size-btn" title="ফন্ট সাইজ পরিবর্তন করুন" aria-label="ফন্ট সাইজ">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></svg>
                 <span class="fs-indicator" id="fs-label">A</span>
             </button>
 
-            <!-- Theme Toggle -->
             <div class="theme-toggle-wrap flex-shrink-0">
                 <div class="toggle-track" id="theme-toggle-track" role="switch" aria-checked="false" tabindex="0" aria-label="ডার্ক মোড টগল">
                     <div class="toggle-thumb" id="theme-toggle-thumb">
@@ -76,10 +65,7 @@
         <p class="subtitle">বিগত বছরের পরীক্ষার প্রশ্ন বিশ্লেষণ ও উত্তর সংকলন</p>
     </header>
 
-    <!-- STATS BAR (dynamic) -->
     <div id="stats-bar" class="hidden"></div>
-
-    <!-- SUBJECT NAVIGATION -->
     <nav id="subject-nav" aria-label="বিষয় নেভিগেশন"></nav>
 
     <!-- Syllabus Mobile Button -->
@@ -92,77 +78,82 @@
 
     <main id="content-area">
 
-        <!-- ===== INTRO / HOME ===== -->
+        <!-- ═════ HOME / INTRO ═════ -->
         <section id="intro-section" class="reveal-on-scroll">
             <div class="card p-6 md:p-10 rounded-3xl text-center mb-6">
                 <p class="welcome-text">স্বাগতম! 📚</p>
                 <p class="welcome-sub">বিগত বছরের প্রশ্ন বিশ্লেষণ করে সেরা প্রস্তুতি নিন — সহজ, দ্রুত ও আধুনিক উপায়ে</p>
 
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
-                    <div class="feature-card">
-                        <div class="icon-container bg-blue-100 dark:bg-blue-900/30">
+
+                    <div class="feature-card feature-card-linked" data-action="chart" role="button" tabindex="0">
+                        <div class="icon-container bg-blue-100">
                             <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
                         </div>
-                        <h3>টপিকভিত্তিক চার্ট</h3>
-                        <p>কোন টপিক বেশি গুরুত্বপূর্ণ তা বিশ্লেষণ করুন</p>
+                        <h3>টপিক চার্ট</h3>
+                        <p>গুরুত্বপূর্ণ টপিক বিশ্লেষণ করুন</p>
+                        <div class="feature-card-arrow">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </div>
                     </div>
-                    <div class="feature-card">
-                        <div class="icon-container bg-green-100 dark:bg-green-900/30">
+
+                    <div class="feature-card feature-card-linked" data-action="mcq" role="button" tabindex="0">
+                        <div class="icon-container bg-green-100">
                             <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         </div>
                         <h3>ইন্টারেক্টিভ MCQ</h3>
-                        <p>তাৎক্ষণিক ফলাফল দেখুন ও স্কোর ট্র্যাক করুন</p>
+                        <p>তাৎক্ষণিক স্কোর দেখুন</p>
+                        <div class="feature-card-arrow">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </div>
                     </div>
-                    <div class="feature-card">
-                        <div class="icon-container bg-purple-100 dark:bg-purple-900/30">
+
+                    <div class="feature-card feature-card-linked" data-action="search" role="button" tabindex="0">
+                        <div class="icon-container bg-purple-100">
                             <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                         </div>
                         <h3>স্মার্ট সার্চ</h3>
-                        <p>যেকোনো প্রশ্ন সাথে সাথে খুঁজে নিন</p>
+                        <p>দ্রুত প্রশ্ন খুঁজুন</p>
+                        <div class="feature-card-arrow">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </div>
                     </div>
-                    <div class="feature-card">
-                        <div class="icon-container bg-amber-100 dark:bg-amber-900/30">
+
+                    <div class="feature-card feature-card-linked" data-action="bookmarks" role="button" tabindex="0">
+                        <div class="icon-container bg-amber-100">
                             <svg class="w-8 h-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>
                         </div>
                         <h3>বুকমার্ক</h3>
-                        <p>গুরুত্বপূর্ণ প্রশ্ন সেভ করে রাখুন</p>
+                        <p>গুরুত্বপূর্ণ প্রশ্ন সেভ করুন</p>
+                        <div class="feature-card-arrow">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </div>
                     </div>
+
                 </div>
             </div>
 
-            <!-- Overall stats on home -->
-            <div id="home-stats" class="grid grid-cols-3 gap-3 mb-4"></div>
+            <!-- Home Stats -->
+            <div id="home-stats" class="grid grid-cols-3 gap-4 mb-6"></div>
         </section>
 
-        <!-- ===== BOOKMARKS SECTION ===== -->
-        <section id="bookmarks-section" class="hidden">
-            <div class="card p-5 md:p-6 mb-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-lg font-bold flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="text-amber-500"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path></svg>
-                        সংরক্ষিত প্রশ্ন
-                    </h2>
-                    <button id="clear-bookmarks-btn" class="neu-btn text-xs py-1 px-3 text-red-500">সব মুছুন</button>
+        <!-- ═════ SUBJECT PICKER BOTTOM SHEET ═════ -->
+        <div id="subject-picker-overlay" class="subject-picker-overlay hidden">
+            <div id="subject-picker-box">
+                <div class="subject-picker-header">
+                    <div>
+                        <h3 id="subject-picker-title">বিষয় নির্বাচন করুন</h3>
+                        <p id="subject-picker-subtitle" style="font-size:0.75rem;color:var(--text-3);margin-top:0.15rem"></p>
+                    </div>
+                    <button id="subject-picker-close" class="picker-close-btn" aria-label="বন্ধ করুন">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                    </button>
                 </div>
-                <div id="bookmarks-list"></div>
+                <div id="subject-picker-list" class="subject-picker-list"></div>
             </div>
-        </section>
+        </div>
 
-        <!-- ===== SYLLABUS SECTION ===== -->
-        <section id="syllabus-section" class="hidden">
-            <div class="card p-5 md:p-6 mb-6">
-                <div class="syllabus-header">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-500"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path></svg>
-                    <h2>৪র্থ সেমিস্টারের সিলেবাস</h2>
-                </div>
-                <div id="syllabus-grid" class="syllabus-grid"></div>
-                <div id="syllabus-content-box" class="syllabus-content-box hidden">
-                    <div id="syllabus-content" class="answer-content"></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ===== CHART SECTION ===== -->
+        <!-- ═════ CHART SECTION ═════ -->
         <section id="chart-section" class="hidden mb-4">
             <div class="card p-4 md:p-5">
                 <h3 class="text-base font-bold text-center mb-3 flex items-center justify-center gap-2">
@@ -173,9 +164,9 @@
             </div>
         </section>
 
-        <!-- ===== FILTER SECTION ===== -->
+        <!-- ═════ FILTER SECTION ═════ -->
         <section id="filter-section" class="hidden mb-4">
-            <div class="filter-wrap">
+            <div class="filter-wrap" id="regular-filters-wrap">
                 <div class="filter-group">
                     <label for="year-filter">
                         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
@@ -196,9 +187,16 @@
                     </div>
                 </div>
 
-                <div id="mcq-controls" class="hidden flex gap-2">
-                    <button onclick="resetMCQAnswers()" class="neu-btn text-xs py-1 px-3">↺ রিসেট</button>
-                    <button onclick="revealAllAnswers()" class="neu-btn text-xs py-1 px-3">সব উত্তর দেখুন</button>
+                <!-- MCQ Controls: JS controls display:flex / display:none via style -->
+                <div id="mcq-controls" style="display:none; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                    <button onclick="resetMCQAnswers()" class="neu-btn text-xs">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                        রিসেট
+                    </button>
+                    <button onclick="revealAllAnswers()" class="neu-btn text-xs reveal-all-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        সব উত্তর দেখুন
+                    </button>
                 </div>
             </div>
 
@@ -211,12 +209,42 @@
             <div id="classnotes-filters" class="hidden mt-3 flex flex-wrap gap-2 justify-center"></div>
         </section>
 
-        <!-- ===== QUESTION DISPLAY ===== -->
+        <!-- ═════ BOOKMARKS SECTION ═════ -->
+        <section id="bookmarks-section" class="hidden bookmarks-section-wrap">
+            <div class="bookmarks-header">
+                <h2 class="bookmarks-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path></svg>
+                    সংরক্ষিত প্রশ্নসমূহ
+                </h2>
+                <button id="clear-bookmarks-btn" class="neu-btn clear-bookmarks-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    সব মুছুন
+                </button>
+            </div>
+            <div id="bookmarks-list"></div>
+        </section>
+
+        <!-- ═════ SYLLABUS SECTION ═════ -->
+        <section id="syllabus-section" class="hidden syllabus-section-wrap">
+            <div class="syllabus-header">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path></svg>
+                <h2>সিলেবাস</h2>
+            </div>
+            <div id="syllabus-grid" class="syllabus-grid"></div>
+            <div id="syllabus-content-box" class="syllabus-content-box hidden">
+                <div id="syllabus-content"></div>
+            </div>
+        </section>
+
+        <!-- ═════ PROGRESS SECTION (used by JS) ═════ -->
+        <section id="progress-section" class="hidden"></section>
+
+        <!-- ═════ QUESTION DISPLAY ═════ -->
         <section id="question-display"></section>
 
     </main>
 
-    <!-- FAB (back to top) -->
+    <!-- FAB -->
     <button id="fab" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="উপরে যান" style="display:none">
         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
     </button>
@@ -247,7 +275,7 @@
         <span id="timer-display">00:00</span>
     </div>
 
-    <!-- CONTEXT MENU (Share) -->
+    <!-- CONTEXT MENU -->
     <div id="ctx-menu" role="menu" aria-label="শেয়ার মেনু">
         <div class="ctx-label" id="ctx-q-label">প্রশ্ন শেয়ার</div>
         <button class="ctx-item" id="ctx-copy-link">
@@ -269,14 +297,13 @@
         </button>
     </div>
 
-    <!-- TOAST CONTAINER -->
     <div id="toast-container" aria-live="polite"></div>
 
     <!-- FOOTER -->
     <footer>
         <p>Crafted &amp; Curated by <span class="brand">サッビル ホセン</span></p>
         <p style="margin-top:0.25rem">Govt. Teachers' Training College, Faridpur</p>
-        <p style="margin-top:0.5rem">
+        <p class="shortcut-desktop-only" style="margin-top:0.5rem">
             <span class="shortcut-hint" onclick="document.getElementById('shortcut-panel').classList.add('open')">
                 <kbd>?</kbd> কীবোর্ড শর্টকাট দেখুন
             </span>

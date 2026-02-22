@@ -73,6 +73,9 @@ function initializeApp() {
 
     document.getElementById('bookmarks-nav-btn').onclick = showBookmarks;
 
+    // Home feature card click handlers
+    initFeatureCardHandlers();
+
     window.addEventListener('hashchange', handleHashChange);
     handleHashChange();
 
@@ -83,8 +86,177 @@ function initializeApp() {
 }
 
 // --------------------------------------------------------------------------
-// 3. Search Feature
+// 2b. Feature Card Handlers (Home Page)
 // --------------------------------------------------------------------------
+function initFeatureCardHandlers() {
+    document.querySelectorAll('.feature-card-linked').forEach(card => {
+        const action = card.dataset.action;
+        card.addEventListener('click', () => handleFeatureCardClick(action));
+        card.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleFeatureCardClick(action);
+            }
+        });
+    });
+
+    // Subject picker close
+    const overlay = document.getElementById('subject-picker-overlay');
+    document.getElementById('subject-picker-close').onclick = () => closeSubjectPicker();
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeSubjectPicker(); });
+}
+
+function handleFeatureCardClick(action) {
+    switch (action) {
+        case 'bookmarks':
+            showBookmarks();
+            break;
+        case 'search':
+            document.getElementById('global-search')?.focus();
+            break;
+        case 'mcq':
+            showSubjectPicker('MCQ অনুশীলন', 'বিষয় বেছে নিন, তারপর সাল ও MCQ অনুশীলনে যান', 'mcq');
+            break;
+        case 'chart':
+            showSubjectPicker('টপিক চার্ট', 'বিষয় নির্বাচন করুন টপিক বিশ্লেষণ দেখতে', 'chart');
+            break;
+    }
+}
+
+function showSubjectPicker(title, subtitle, mode) {
+    const overlay = document.getElementById('subject-picker-overlay');
+    const list = document.getElementById('subject-picker-list');
+    document.getElementById('subject-picker-title').textContent = title;
+    document.getElementById('subject-picker-subtitle').textContent = subtitle;
+
+    list.innerHTML = '';
+
+    // Filter subjects that have MCQ/questions
+    const subjects = Object.keys(allData).filter(k => k !== 'syllabus' && !allData[k].isNoteCategory && allData[k].questions);
+
+    if (subjects.length === 0) {
+        list.innerHTML = '<p class="text-center text-gray-400 py-4">কোনো বিষয় পাওয়া যায়নি।</p>';
+    }
+
+    subjects.forEach(key => {
+        const subj = allData[key];
+        const btn = document.createElement('button');
+        btn.className = 'subject-picker-btn';
+
+        // Count MCQs
+        const totalMCQ = Object.keys(subj.questions || {}).reduce((acc, yr) => {
+            return acc + (subj.questions[yr]?.mcq?.length || 0);
+        }, 0);
+        const years = subj.years || [];
+
+        btn.innerHTML = `
+            <span class="picker-icon">${subj.icon || '📘'}</span>
+            <div class="picker-info">
+                <span class="picker-name">${subj.name}</span>
+                <span class="picker-meta">${years.length > 0 ? years[0] + '–' + years[years.length-1] : ''} · ${totalMCQ > 0 ? totalMCQ + ' MCQ' : 'লিখিত'}</span>
+            </div>
+            <svg class="picker-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+        `;
+
+        btn.onclick = () => {
+            if (mode === 'chart') {
+                closeSubjectPicker();
+                selectSubject(key);
+                setTimeout(() => {
+                    const chartSection = document.getElementById('chart-section');
+                    if (chartSection && !chartSection.classList.contains('hidden')) {
+                        chartSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }, 350);
+            } else if (mode === 'mcq') {
+                // Show year selection step inside the picker
+                showYearPicker(key, years, subj);
+            }
+        };
+
+        list.appendChild(btn);
+    });
+
+    overlay.classList.remove('hidden');
+    requestAnimationFrame(() => overlay.classList.add('open'));
+}
+
+function closeSubjectPicker() {
+    const overlay = document.getElementById('subject-picker-overlay');
+    overlay.classList.remove('open');
+    setTimeout(() => overlay.classList.add('hidden'), 300);
+}
+
+function showYearPicker(subjectKey, years, subjData) {
+    const list = document.getElementById('subject-picker-list');
+    document.getElementById('subject-picker-title').textContent = subjData.name;
+    document.getElementById('subject-picker-subtitle').textContent = 'সাল নির্বাচন করুন — MCQ অনুশীলনে যান';
+
+    list.innerHTML = '';
+
+    const wrap = document.createElement('div');
+    wrap.className = 'year-picker-wrap';
+
+    // Back button
+    const backBtn = document.createElement('button');
+    backBtn.className = 'year-picker-back';
+    backBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+        বিষয় পরিবর্তন করুন
+    `;
+    backBtn.onclick = () => showSubjectPicker('MCQ অনুশীলন', 'বিষয় বেছে নিন, তারপর সালে MCQ অনুশীলনে যান', 'mcq');
+    wrap.appendChild(backBtn);
+
+    // Year buttons — only show years that have MCQ
+    const mcqYears = years.filter(yr => (allData[subjectKey]?.questions?.[yr]?.mcq?.length || 0) > 0);
+    
+    if (mcqYears.length === 0) {
+        const msg = document.createElement('p');
+        msg.style.cssText = 'text-align:center;color:var(--text-3);padding:1.5rem 0;font-size:0.9rem;';
+        msg.textContent = 'এই বিষয়ে MCQ প্রশ্ন পাওয়া যায়নি।';
+        wrap.appendChild(msg);
+    } else {
+        mcqYears.forEach(yr => {
+            const count = allData[subjectKey]?.questions?.[yr]?.mcq?.length || 0;
+            const btn = document.createElement('button');
+            btn.className = 'year-btn';
+            btn.innerHTML = `
+                <span>${yr} সাল</span>
+                <span class="year-btn-badge">${count} MCQ</span>
+            `;
+            btn.onclick = () => {
+                closeSubjectPicker();
+                selectSubjectAndType(subjectKey, String(yr), 'mcq');
+            };
+            wrap.appendChild(btn);
+        });
+    }
+
+    list.appendChild(wrap);
+}
+
+function selectSubjectAndType(key, year, type) {
+    if (!allData[key]) return;
+    document.querySelectorAll('#subject-nav button').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.subject === key);
+    });
+    hideAllSections();
+    document.getElementById('filter-section').classList.remove('hidden');
+    currentState.subject = key;
+    currentState.year = year;
+    currentState.type = type;
+    const subjectData = allData[key];
+    if (subjectData.analysis?.data?.length > 0) {
+        document.getElementById('chart-section').classList.remove('hidden');
+        renderChart();
+    }
+    renderFilters();
+    renderQuestions();
+    updateHashFromState();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+
 function buildSearchIndex() {
     searchIndex = [];
     Object.keys(allData).forEach(subjectKey => {
@@ -523,6 +695,7 @@ function renderMCQQuestions(questions, container) {
 
         const letters = ['ক', 'খ', 'গ', 'ঘ'];
 
+        card.dataset.correctIdx = item.a; // Store correct answer index for revealAllAnswers
         card.innerHTML = `
             <p class="mcq-q-text">${idx + 1}। ${item.q}</p>
             <div class="mcq-options">
@@ -580,7 +753,9 @@ function handleMCQOptionClick(optionEl, item, card) {
 
 function showMCQScoreUI(total) {
     document.getElementById('mcq-score-wrap').classList.remove('hidden');
-    document.getElementById('mcq-controls').classList.remove('hidden');
+    const mcqControls = document.getElementById('mcq-controls');
+    mcqControls.classList.remove('hidden');
+    mcqControls.style.display = 'flex';
     document.getElementById('mcq-progress-bar-wrap').classList.remove('hidden');
     document.getElementById('mcq-score').textContent = '0';
     document.getElementById('mcq-total').textContent = total;
@@ -589,7 +764,9 @@ function showMCQScoreUI(total) {
 
 function hideMCQScoreUI() {
     document.getElementById('mcq-score-wrap').classList.add('hidden');
-    document.getElementById('mcq-controls').classList.add('hidden');
+    const mcqControls = document.getElementById('mcq-controls');
+    mcqControls.classList.add('hidden');
+    mcqControls.style.display = 'none';
     document.getElementById('mcq-progress-bar-wrap').classList.add('hidden');
 }
 
@@ -627,25 +804,46 @@ function resetMCQAnswers() {
 }
 
 function revealAllAnswers() {
+    // Reveal MCQ answers for unanswered cards
+    let mcqRevealed = 0;
     document.querySelectorAll('.mcq-card:not([data-answered])').forEach(card => {
-        const item_a = Array.from(card.querySelectorAll('.mcq-option'));
-        // We need to find the correct index — stored via data attribute
-        // Reveal by marking correct
-        const opts = card.querySelectorAll('.mcq-option');
-        // We can't know the answer index without the original data — skip silently
-        // Instead, we open all written accordions
+        const correctIdx = parseInt(card.dataset.correctIdx);
+        if (isNaN(correctIdx)) return;
+
+        card.dataset.answered = 'true';
+        card.dataset.revealed = 'true';
+        card.querySelectorAll('.mcq-option').forEach((el, i) => {
+            el.style.pointerEvents = 'none';
+            el.removeAttribute('tabindex');
+            if (i === correctIdx) {
+                el.classList.add('correct');
+                el.querySelector('.option-icon').textContent = '✔';
+            }
+        });
+        mcqRevealed++;
     });
 
-    // For written: open all
-    document.querySelectorAll('.q-header:not(.active)').forEach(h => {
+    // For written: open all accordions
+    let writtenOpened = 0;
+    document.querySelectorAll('#question-display .q-header:not(.active)').forEach(h => {
+        const accordion = h.closest('.q-accordion');
         const body = h.nextElementSibling;
         if (body) {
             body.classList.add('open');
             h.classList.add('active');
+            accordion?.classList.add('is-open');
+            writtenOpened++;
         }
     });
 
-    showToast('📖 সব উত্তর খোলা হয়েছে', 'info');
+    // Update MCQ score after reveal
+    if (mcqRevealed > 0) updateMCQScore();
+
+    if (mcqRevealed > 0 || writtenOpened > 0) {
+        showToast('📖 সব উত্তর দেখানো হয়েছে', 'success');
+    } else {
+        showToast('✅ সব প্রশ্নের উত্তর ইতোমধ্যে দেখা হয়েছে', 'info');
+    }
 }
 
 // --------------------------------------------------------------------------
