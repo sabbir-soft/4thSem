@@ -675,6 +675,20 @@ function toggleAccordion(header, body) {
     }
 }
 
+// ── Language detection: true if text is primarily English/ASCII ──
+function isEnglishText(text) {
+    const clean = (text || '').replace(/[\s\d.,!?()\'\"-]/g, '');
+    if (!clean.length) return false;
+    const ascii = clean.split('').filter(c => c.charCodeAt(0) < 128).length;
+    return ascii / clean.length > 0.75;
+}
+
+// ── Convert English digit to Bengali numeral ──
+function toBengaliNum(n) {
+    const bn = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
+    return String(n).split('').map(d => bn[+d] ?? d).join('');
+}
+
 function renderMCQQuestions(questions, container) {
     showMCQScoreUI(questions.length);
 
@@ -693,15 +707,32 @@ function renderMCQQuestions(questions, container) {
             qText: (item.q || '').replace(/<[^>]*>/g, '')
         };
 
-        const letters = ['ক', 'খ', 'গ', 'ঘ'];
+        // Detect language per-question (question + all options combined)
+        const fullText = (item.q || '') + ' ' + (item.o || []).join(' ');
+        const isEn = isEnglishText(fullText);
+        const bnLetters = ['ক', 'খ', 'গ', 'ঘ'];
+        const enLetters = ['a', 'b', 'c', 'd'];
+        const letters = isEn ? enLetters : bnLetters;
 
-        card.dataset.correctIdx = item.a; // Store correct answer index for revealAllAnswers
+        // Badge number: Bengali numerals for Bengali, Arabic for English
+        const badgeLabel = isEn ? (idx + 1) : toBengaliNum(idx + 1);
+
+        // Strip leading serial from question text (anchored at ^ — safe for mid-text numbers)
+        const cleanQ = (item.q || '').replace(/^([০-৯\d]+)[।.)\s]+/, '');
+
+        card.dataset.correctIdx = item.a;
+        card.dataset.isEn = isEn ? '1' : '0';
+
         card.innerHTML = `
-            <p class="mcq-q-text">${idx + 1}। ${item.q}</p>
+            <div class="mcq-q-header">
+                <span class="q-num-badge mcq-badge">${badgeLabel}</span>
+                <p class="mcq-q-text${isEn ? ' en' : ''}">${cleanQ}</p>
+            </div>
             <div class="mcq-options">
                 ${(item.o || []).map((opt, oi) => `
-                    <div class="mcq-option" data-opt="${oi}" tabindex="0" role="button" aria-label="${letters[oi]}: ${opt}">
-                        <span class="opt-letter">${letters[oi]}</span>
+                    <div class="mcq-option" data-opt="${oi}" tabindex="0" role="button"
+                         aria-label="${letters[oi]}: ${opt}">
+                        <span class="opt-letter${isEn ? ' en' : ''}">${letters[oi]}</span>
                         <span class="opt-text">${opt}</span>
                         <span class="option-icon" aria-hidden="true"></span>
                     </div>
@@ -719,7 +750,15 @@ function renderMCQQuestions(questions, container) {
             });
         });
 
-        // Long-press / right-click share on MCQ question text
+        // Badge hover (like written q-num-badge)
+        card.addEventListener('mouseenter', () => {
+            if (!card.dataset.answered) card.querySelector('.mcq-badge')?.classList.add('hov');
+        });
+        card.addEventListener('mouseleave', () => {
+            card.querySelector('.mcq-badge')?.classList.remove('hov');
+        });
+
+        // Long-press / right-click share
         attachShareHandlers(card.querySelector('.mcq-q-text'), shareTarget);
 
         wrap.appendChild(card);
@@ -739,14 +778,28 @@ function handleMCQOptionClick(optionEl, item, card) {
     const correctIdx = item.a;
     const selectedIdx = Array.from(card.querySelectorAll('.mcq-option')).indexOf(optionEl);
     const correctEl = card.querySelectorAll('.mcq-option')[correctIdx];
+    const isCorrect = selectedIdx === correctIdx;
 
     correctEl.classList.add('correct');
     correctEl.querySelector('.option-icon').textContent = '✔';
 
-    if (selectedIdx !== correctIdx) {
+    if (!isCorrect) {
         optionEl.classList.add('incorrect');
         optionEl.querySelector('.option-icon').textContent = '✖';
     }
+
+    // Badge animate (like written q-num-badge active state)
+    const badge = card.querySelector('.mcq-badge');
+    if (badge) {
+        badge.classList.remove('hov');
+        badge.classList.add(isCorrect ? 'ans-ok' : 'ans-no');
+        void badge.offsetWidth; // reflow to restart animation
+        badge.classList.add('pulse');
+        setTimeout(() => badge.classList.remove('pulse'), 500);
+    }
+
+    // Card-level glow border
+    card.classList.add(isCorrect ? 'c-ok' : 'c-no');
 
     updateMCQScore();
 }
@@ -789,14 +842,18 @@ function updateMCQScore() {
 }
 
 function resetMCQAnswers() {
-    document.querySelectorAll('.mcq-card[data-answered]').forEach(card => {
+    document.querySelectorAll('.mcq-card').forEach(card => {
         card.removeAttribute('data-answered');
+        card.removeAttribute('data-revealed');
+        card.classList.remove('c-ok', 'c-no');
         card.querySelectorAll('.mcq-option').forEach(el => {
             el.style.pointerEvents = 'auto';
             el.setAttribute('tabindex', '0');
             el.classList.remove('correct', 'incorrect');
             el.querySelector('.option-icon').textContent = '';
         });
+        const badge = card.querySelector('.mcq-badge');
+        if (badge) badge.classList.remove('hov', 'ans-ok', 'ans-no', 'pulse');
     });
     document.getElementById('mcq-score').textContent = '0';
     document.getElementById('mcq-progress-bar').style.width = '0%';
@@ -804,26 +861,56 @@ function resetMCQAnswers() {
 }
 
 function revealAllAnswers() {
-    // Reveal MCQ answers for unanswered cards
-    let mcqRevealed = 0;
-    document.querySelectorAll('.mcq-card:not([data-answered])').forEach(card => {
-        const correctIdx = parseInt(card.dataset.correctIdx);
-        if (isNaN(correctIdx)) return;
+    const mcqCards = document.querySelectorAll('.mcq-card');
+    let mcqCount = mcqCards.length;
 
-        card.dataset.answered = 'true';
-        card.dataset.revealed = 'true';
-        card.querySelectorAll('.mcq-option').forEach((el, i) => {
-            el.style.pointerEvents = 'none';
-            el.removeAttribute('tabindex');
-            if (i === correctIdx) {
-                el.classList.add('correct');
-                el.querySelector('.option-icon').textContent = '✔';
+    if (mcqCount > 0) {
+        // ── Step 1: Full reset — clear any practice attempts ──
+        mcqCards.forEach(card => {
+            card.removeAttribute('data-answered');
+            card.removeAttribute('data-revealed');
+            card.classList.remove('c-ok', 'c-no');
+            card.querySelectorAll('.mcq-option').forEach(el => {
+                el.style.pointerEvents = 'none'; // will lock after reveal
+                el.setAttribute('tabindex', '0');
+                el.classList.remove('correct', 'incorrect');
+                el.querySelector('.option-icon').textContent = '';
+            });
+            const badge = card.querySelector('.mcq-badge');
+            if (badge) badge.classList.remove('hov', 'ans-ok', 'ans-no', 'pulse');
+        });
+
+        // ── Step 2: Show only the correct answer on every card ──
+        mcqCards.forEach(card => {
+            const correctIdx = parseInt(card.dataset.correctIdx);
+            if (isNaN(correctIdx)) return;
+
+            card.dataset.answered = 'true';
+            card.dataset.revealed = 'true';
+            card.classList.add('c-ok'); // neutral green glow for reveal
+
+            card.querySelectorAll('.mcq-option').forEach((el, i) => {
+                el.style.pointerEvents = 'none';
+                el.removeAttribute('tabindex');
+                if (i === correctIdx) {
+                    el.classList.add('correct');
+                    el.querySelector('.option-icon').textContent = '✔';
+                }
+            });
+
+            const badge = card.querySelector('.mcq-badge');
+            if (badge) {
+                badge.classList.add('ans-ok', 'pulse');
+                setTimeout(() => badge.classList.remove('pulse'), 500);
             }
         });
-        mcqRevealed++;
-    });
 
-    // For written: open all accordions
+        updateMCQScore();
+        showToast('📖 সব সঠিক উত্তর দেখানো হয়েছে', 'success');
+        return;
+    }
+
+    // ── Written: open all accordions ──
     let writtenOpened = 0;
     document.querySelectorAll('#question-display .q-header:not(.active)').forEach(h => {
         const accordion = h.closest('.q-accordion');
@@ -836,10 +923,7 @@ function revealAllAnswers() {
         }
     });
 
-    // Update MCQ score after reveal
-    if (mcqRevealed > 0) updateMCQScore();
-
-    if (mcqRevealed > 0 || writtenOpened > 0) {
+    if (writtenOpened > 0) {
         showToast('📖 সব উত্তর দেখানো হয়েছে', 'success');
     } else {
         showToast('✅ সব প্রশ্নের উত্তর ইতোমধ্যে দেখা হয়েছে', 'info');
