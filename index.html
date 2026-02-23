@@ -269,10 +269,19 @@
         </div>
     </div>
 
-    <!-- STUDY TIMER -->
-    <div id="study-timer" title="ক্লিক করুন পজ/রিজিউম করতে">
+    <!-- STUDY TIMER / DYNAMIC SCORE PILL -->
+    <div id="study-timer" title="ক্লিক করুন পজ/রিজিউম করতে · সোয়াইপ করে স্কোর/টাইমার বদলান">
         <div class="timer-dot"></div>
-        <span id="timer-display">00:00</span>
+        <div id="timer-panel">
+            <span id="timer-display">00:00</span>
+        </div>
+        <div id="score-panel" aria-label="MCQ স্কোর">
+            <span class="score-pill-label">স্কোর</span>
+            <span class="score-pill-score" id="pill-score">0</span>
+            <span class="score-pill-sep">/</span>
+            <span class="score-pill-total" id="pill-total">0</span>
+        </div>
+        <div class="timer-swipe-hint"></div>
     </div>
 
     <!-- CONTEXT MENU -->

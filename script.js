@@ -813,6 +813,9 @@ function showMCQScoreUI(total) {
     document.getElementById('mcq-score').textContent = '0';
     document.getElementById('mcq-total').textContent = total;
     document.getElementById('mcq-progress-bar').style.width = '0%';
+    // Activate dynamic pill
+    updatePillScore(0, total);
+    activateMCQPillMode();
 }
 
 function hideMCQScoreUI() {
@@ -821,6 +824,8 @@ function hideMCQScoreUI() {
     mcqControls.classList.add('hidden');
     mcqControls.style.display = 'none';
     document.getElementById('mcq-progress-bar-wrap').classList.add('hidden');
+    // Deactivate pill
+    deactivateMCQPillMode();
 }
 
 function updateMCQScore() {
@@ -833,6 +838,9 @@ function updateMCQScore() {
     // Update progress bar
     const pct = total > 0 ? (answered / total) * 100 : 0;
     document.getElementById('mcq-progress-bar').style.width = pct + '%';
+
+    // Update dynamic pill
+    updatePillScore(score, total);
 
     // Completion toast
     if (answered === total && total > 0) {
@@ -1636,9 +1644,17 @@ function initScrollProgressBar() {
 }
 
 // --------------------------------------------------------------------------
-// 21. Study Timer
+// 21. Study Timer — Dynamic Now-Bar (Score/Timer switching)
 // --------------------------------------------------------------------------
 let timerInterval = null, timerSeconds = 0, timerPaused = false;
+
+// Track whether MCQ score section is visible in viewport
+let mcqScoreVisible = true;      // true = score-wrap visible → show timer in pill
+let pillShowScore = false;        // pill is currently in score-mode
+let mcqActive = false;            // MCQ mode is active at all
+
+// Swipe tracking
+let swipeTouchStartX = 0, swipeTouchStartY = 0;
 
 function initStudyTimer() {
     const timerEl = document.getElementById('study-timer');
@@ -1652,12 +1668,138 @@ function initStudyTimer() {
         }
     }, 1000);
 
-    // Click to pause/resume
-    timerEl.addEventListener('click', () => {
-        timerPaused = !timerPaused;
-        timerEl.classList.toggle('paused', timerPaused);
-        showToast(timerPaused ? '⏸ টাইমার থামানো হয়েছে' : '▶ টাইমার চলছে');
+    // Click: pause/resume (only when showing timer), or toggle when showing score
+    timerEl.addEventListener('click', (e) => {
+        if (pillShowScore) {
+            // Tap on score pill → switch to timer briefly, then auto-switch back? No — just toggle manually
+            switchPillMode('timer');
+        } else {
+            timerPaused = !timerPaused;
+            timerEl.classList.toggle('paused', timerPaused);
+            showToast(timerPaused ? '⏸ টাইমার থামানো হয়েছে' : '▶ টাইমার চলছে');
+        }
     });
+
+    // ── Swipe gesture (mobile & desktop) ──
+    timerEl.addEventListener('touchstart', (e) => {
+        swipeTouchStartX = e.touches[0].clientX;
+        swipeTouchStartY = e.touches[0].clientY;
+    }, { passive: true });
+
+    timerEl.addEventListener('touchend', (e) => {
+        const dx = e.changedTouches[0].clientX - swipeTouchStartX;
+        const dy = e.changedTouches[0].clientY - swipeTouchStartY;
+        // Swipe threshold: 30px, must be primarily horizontal or vertical
+        if (Math.abs(dx) > 30 || Math.abs(dy) > 30) {
+            if (mcqActive) {
+                // Any swipe direction toggles score/timer in pill
+                togglePillModeManual();
+            }
+        }
+    }, { passive: true });
+
+    // Mouse wheel / trackpad swipe on pill
+    timerEl.addEventListener('wheel', (e) => {
+        if (!mcqActive) return;
+        e.preventDefault();
+        togglePillModeManual();
+    }, { passive: false });
+
+    // ── IntersectionObserver: watch MCQ score wrap ──
+    const scoreWrap = document.getElementById('mcq-score-wrap');
+    const scoreObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            mcqScoreVisible = entry.isIntersecting;
+            if (mcqActive) {
+                if (!mcqScoreVisible) {
+                    // Score scrolled out → show score in pill
+                    switchPillMode('score');
+                } else {
+                    // Score back in view → show timer in pill
+                    switchPillMode('timer');
+                }
+            }
+        });
+    }, { threshold: 0.1 });
+
+    scoreObserver.observe(scoreWrap);
+}
+
+function switchPillMode(mode, skipAnim) {
+    const timerEl = document.getElementById('study-timer');
+    if (mode === 'score') {
+        if (!pillShowScore) {
+            pillShowScore = true;
+            timerEl.classList.add('show-score');
+            if (!skipAnim) {
+                timerEl.classList.add('score-mode-entering');
+                setTimeout(() => timerEl.classList.remove('score-mode-entering'), 450);
+            }
+        }
+    } else {
+        if (pillShowScore) {
+            pillShowScore = false;
+            timerEl.classList.remove('show-score');
+            if (!skipAnim) {
+                timerEl.classList.add('score-mode-entering');
+                setTimeout(() => timerEl.classList.remove('score-mode-entering'), 450);
+            }
+        }
+    }
+}
+
+// Manual toggle by swipe
+let lastManualToggle = 0;
+function togglePillModeManual() {
+    const now = Date.now();
+    if (now - lastManualToggle < 400) return; // debounce
+    lastManualToggle = now;
+    switchPillMode(pillShowScore ? 'timer' : 'score');
+}
+
+// Called when MCQ practice starts
+function activateMCQPillMode() {
+    mcqActive = true;
+    // Initially, if score wrap is not visible, show score in pill
+    const scoreWrap = document.getElementById('mcq-score-wrap');
+    const rect = scoreWrap?.getBoundingClientRect();
+    mcqScoreVisible = rect ? (rect.top >= 0 && rect.bottom <= window.innerHeight) : false;
+    if (!mcqScoreVisible) {
+        switchPillMode('score', true);
+    }
+}
+
+// Called when leaving MCQ mode
+function deactivateMCQPillMode() {
+    mcqActive = false;
+    switchPillMode('timer', true);
+}
+
+// Update pill score display
+function updatePillScore(score, total) {
+    const pillScore = document.getElementById('pill-score');
+    const pillTotal = document.getElementById('pill-total');
+    if (!pillScore || !pillTotal) return;
+
+    const oldScore = pillScore.textContent;
+    pillScore.textContent = score;
+    pillTotal.textContent = total;
+
+    if (String(score) !== oldScore && mcqActive) {
+        // Flash animation on score change
+        pillScore.classList.remove('updated');
+        void pillScore.offsetWidth;
+        pillScore.classList.add('updated');
+        setTimeout(() => pillScore.classList.remove('updated'), 500);
+
+        // Dot color = green if good, rose if poor
+        const pct = total > 0 ? score / total : 0;
+        const dot = document.querySelector('#study-timer .timer-dot');
+        if (dot) {
+            dot.style.background = pct >= 0.7 ? 'var(--accent-4)' : pct >= 0.4 ? 'var(--accent-warm)' : 'var(--accent-rose)';
+            dot.style.boxShadow = pct >= 0.7 ? '0 0 8px rgba(16,185,129,0.8)' : pct >= 0.4 ? '0 0 8px rgba(245,158,11,0.8)' : '0 0 8px rgba(244,63,94,0.8)';
+        }
+    }
 }
 
 function formatTime(s) {

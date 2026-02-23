@@ -1275,45 +1275,162 @@ footer span.brand { font-weight: 700; color: var(--accent); }
 }
 
 /* ---- STUDY TIMER ---- */
+/* ======================================================
+   DYNAMIC NOW-BAR STYLE TIMER / SCORE PILL
+   ====================================================== */
 #study-timer {
     position: fixed;
     bottom: 1.5rem;
     right: 1.5rem;
     z-index: 500;
     background: var(--surface);
-    border-radius: 16px;
-    padding: 0.6rem 1rem;
-    box-shadow: -4px -4px 8px var(--shadow-light), 4px 4px 8px var(--shadow-dark), 0 0 0 1px rgba(99,102,241,0.1);
+    border-radius: 50px;
+    padding: 0.55rem 1.1rem;
+    box-shadow:
+        -5px -5px 10px var(--shadow-light),
+        5px 5px 10px var(--shadow-dark),
+        0 0 0 1.5px rgba(99,102,241,0.12),
+        0 8px 28px rgba(91,94,244,0.08);
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.55rem;
     font-family: 'Inter', monospace;
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     font-weight: 700;
     color: var(--text-2);
     cursor: pointer;
-    transition: all var(--transition);
+    transition:
+        all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+        width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     user-select: none;
+    overflow: hidden;
+    white-space: nowrap;
+    min-width: 80px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: pan-y;
 }
 #study-timer:hover {
     color: var(--accent);
-    box-shadow: -5px -5px 10px var(--shadow-light), 5px 5px 10px var(--shadow-dark), 0 0 0 2px rgba(99,102,241,0.2);
+    box-shadow:
+        -6px -6px 12px var(--shadow-light),
+        6px 6px 12px var(--shadow-dark),
+        0 0 0 2px rgba(99,102,241,0.22),
+        0 12px 36px rgba(91,94,244,0.14);
+    transform: translateY(-2px) scale(1.02);
 }
+#study-timer:active {
+    transform: scale(0.96);
+}
+
+/* Timer dot */
 #study-timer .timer-dot {
     width: 7px; height: 7px;
     border-radius: 50%;
     background: var(--accent-4);
-    box-shadow: 0 0 6px rgba(16,185,129,0.7);
+    box-shadow: 0 0 6px rgba(16,185,129,0.8);
     animation: timerPulse 2s ease-in-out infinite;
+    flex-shrink: 0;
+    transition: all 0.4s ease;
 }
 #study-timer.paused .timer-dot {
     background: var(--accent-warm);
-    box-shadow: 0 0 6px rgba(245,158,11,0.7);
+    box-shadow: 0 0 6px rgba(245,158,11,0.8);
     animation: none;
 }
 @keyframes timerPulse {
     0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.4); opacity: 0.7; }
+    50% { transform: scale(1.5); opacity: 0.7; }
+}
+
+/* Timer panels - slide transition */
+#timer-panel, #score-panel {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+}
+
+/* Score panel hidden by default */
+#score-panel {
+    display: none;
+    gap: 0.5rem;
+}
+
+/* When timer shows score mode */
+#study-timer.show-score #timer-panel {
+    display: none;
+}
+#study-timer.show-score #score-panel {
+    display: flex;
+}
+#study-timer.show-score .timer-dot {
+    background: var(--accent);
+    box-shadow: 0 0 8px rgba(91,94,244,0.7);
+    animation: timerPulse 1.5s ease-in-out infinite;
+}
+
+/* Score pill content */
+.score-pill-score {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--accent-4);
+    line-height: 1;
+    min-width: 14px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+.score-pill-sep {
+    color: var(--text-3);
+    font-weight: 400;
+    font-size: 0.8rem;
+}
+.score-pill-total {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-2);
+}
+.score-pill-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--text-3);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+/* Score updated animation */
+@keyframes scoreFlash {
+    0% { transform: scale(1); }
+    30% { transform: scale(1.4); color: var(--accent-4); }
+    100% { transform: scale(1); }
+}
+.score-pill-score.updated {
+    animation: scoreFlash 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Swipe hint indicator */
+.timer-swipe-hint {
+    width: 3px; height: 12px;
+    border-radius: 99px;
+    background: var(--text-3);
+    opacity: 0.3;
+    transition: opacity 0.3s;
+    flex-shrink: 0;
+    align-self: center;
+}
+#study-timer:hover .timer-swipe-hint {
+    opacity: 0.6;
+}
+
+/* Pill entrance animation */
+@keyframes pillEntrance {
+    0% { transform: translateY(12px) scale(0.88); opacity: 0; }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+#study-timer.score-mode-entering {
+    animation: pillEntrance 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 /* ---- KEYBOARD SHORTCUT PANEL ---- */
