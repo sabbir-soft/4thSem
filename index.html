@@ -60,7 +60,27 @@
 
     <!-- HEADER -->
     <header class="text-center">
-        <div class="header-badge">৪র্থ সেমিস্টার</div>
+        <!-- CREATIVE SEMESTER BADGE -->
+        <div class="sem-hero-badge">
+            <div class="sem-orb-ring"></div>
+            <div class="sem-orb-ring sem-orb-ring-2"></div>
+            <div class="sem-badge-inner">
+                <div class="sem-label-top">ACADEMIC YEAR</div>
+                <div class="sem-number-row">
+                    <span class="sem-roman">4<span class="sem-th">th</span></span>
+                    <div class="sem-divider-v"></div>
+                    <div class="sem-text-col">
+                        <span class="sem-word-top">SEMESTER</span>
+                        <span class="sem-word-bot">প্রশ্নোত্তর</span>
+                    </div>
+                </div>
+                <div class="sem-label-bot">
+                    <span class="sem-dot-sm"></span>
+                    B.Ed Hons Program
+                    <span class="sem-dot-sm"></span>
+                </div>
+            </div>
+        </div>
         <h1>প্রশ্নোত্তর সংকলন</h1>
         <p class="subtitle">বিগত বছরের পরীক্ষার প্রশ্ন বিশ্লেষণ ও উত্তর সংকলন</p>
     </header>
@@ -81,14 +101,32 @@
         <!-- ═════ HOME / INTRO ═════ -->
         <section id="intro-section" class="reveal-on-scroll">
             <div class="card p-6 md:p-10 rounded-3xl text-center mb-6">
-                <p class="welcome-text">স্বাগতম! 📚</p>
+                <p class="welcome-text" style="display:flex;align-items:center;justify-content:center;gap:0.6rem">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/><path d="m9 9.5 2 2 4-4"/></svg>
+                    স্বাগতম!
+                </p>
                 <p class="welcome-sub">বিগত বছরের প্রশ্ন বিশ্লেষণ করে সেরা প্রস্তুতি নিন — সহজ, দ্রুত ও আধুনিক উপায়ে</p>
 
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
 
-                    <div class="feature-card feature-card-linked" data-action="chart" role="button" tabindex="0">
-                        <div class="icon-container bg-blue-100">
-                            <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                    <div class="feature-card feature-card-linked fc-chart" data-action="chart" role="button" tabindex="0">
+                        <div class="fc-icon-wrap fc-icon-blue">
+                            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Bar chart base -->
+                                <rect x="4" y="36" width="40" height="3" rx="1.5" fill="currentColor" opacity="0.25"/>
+                                <!-- Bars -->
+                                <rect x="7" y="22" width="8" height="14" rx="3" fill="currentColor" opacity="0.6"/>
+                                <rect x="20" y="14" width="8" height="22" rx="3" fill="currentColor"/>
+                                <rect x="33" y="18" width="8" height="18" rx="3" fill="currentColor" opacity="0.75"/>
+                                <!-- Trend line -->
+                                <path d="M11 19 L24 11 L37 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"/>
+                                <!-- Dots on trend -->
+                                <circle cx="11" cy="19" r="2.5" fill="currentColor" opacity="0.7"/>
+                                <circle cx="24" cy="11" r="2.5" fill="currentColor"/>
+                                <circle cx="37" cy="15" r="2.5" fill="currentColor" opacity="0.7"/>
+                                <!-- Sparkle top -->
+                                <path d="M40 6 L41 9 L44 6 L41 9 L40 12 L39 9 L36 6 L39 9 Z" fill="currentColor" opacity="0.4"/>
+                            </svg>
                         </div>
                         <h3>টপিক চার্ট</h3>
                         <p>গুরুত্বপূর্ণ টপিক বিশ্লেষণ করুন</p>
@@ -97,9 +135,22 @@
                         </div>
                     </div>
 
-                    <div class="feature-card feature-card-linked" data-action="mcq" role="button" tabindex="0">
-                        <div class="icon-container bg-green-100">
-                            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <div class="feature-card feature-card-linked fc-mcq" data-action="mcq" role="button" tabindex="0">
+                        <div class="fc-icon-wrap fc-icon-green">
+                            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Clipboard -->
+                                <rect x="8" y="8" width="32" height="36" rx="5" fill="currentColor" opacity="0.15"/>
+                                <rect x="8" y="8" width="32" height="36" rx="5" stroke="currentColor" stroke-width="2"/>
+                                <!-- Clip top -->
+                                <rect x="18" y="4" width="12" height="8" rx="3" fill="currentColor" opacity="0.8"/>
+                                <!-- Check lines -->
+                                <path d="M15 20 L21 26 L33 15" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="15" y1="32" x2="30" y2="32" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+                                <line x1="15" y1="37" x2="25" y2="37" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
+                                <!-- Star badge -->
+                                <circle cx="36" cy="34" r="6" fill="currentColor"/>
+                                <path d="M36 31l.9 2.8H40l-2.4 1.7.9 2.8-2.4-1.7-2.4 1.7.9-2.8-2.4-1.7h2.9z" fill="white"/>
+                            </svg>
                         </div>
                         <h3>ইন্টারেক্টিভ MCQ</h3>
                         <p>তাৎক্ষণিক স্কোর দেখুন</p>
@@ -108,9 +159,23 @@
                         </div>
                     </div>
 
-                    <div class="feature-card feature-card-linked" data-action="search" role="button" tabindex="0">
-                        <div class="icon-container bg-purple-100">
-                            <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                    <div class="feature-card feature-card-linked fc-search" data-action="search" role="button" tabindex="0">
+                        <div class="fc-icon-wrap fc-icon-purple">
+                            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Magnifier body -->
+                                <circle cx="20" cy="20" r="12" stroke="currentColor" stroke-width="3" fill="currentColor" opacity="0.1"/>
+                                <!-- Handle -->
+                                <line x1="29" y1="29" x2="42" y2="42" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                                <!-- Inner lines (text being searched) -->
+                                <line x1="15" y1="18" x2="25" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+                                <line x1="15" y1="22" x2="22" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+                                <!-- Sparkles -->
+                                <circle cx="35" cy="10" r="2" fill="currentColor" opacity="0.5"/>
+                                <circle cx="40" cy="16" r="1.5" fill="currentColor" opacity="0.4"/>
+                                <path d="M37 6 L38 8 L37 10 L36 8 Z" fill="currentColor" opacity="0.5"/>
+                                <!-- Search glow -->
+                                <circle cx="20" cy="20" r="12" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.3"/>
+                            </svg>
                         </div>
                         <h3>স্মার্ট সার্চ</h3>
                         <p>দ্রুত প্রশ্ন খুঁজুন</p>
@@ -119,9 +184,19 @@
                         </div>
                     </div>
 
-                    <div class="feature-card feature-card-linked" data-action="bookmarks" role="button" tabindex="0">
-                        <div class="icon-container bg-amber-100">
-                            <svg class="w-8 h-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>
+                    <div class="feature-card feature-card-linked fc-bookmark" data-action="bookmarks" role="button" tabindex="0">
+                        <div class="fc-icon-wrap fc-icon-amber">
+                            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Main bookmark -->
+                                <path d="M12 6 H36 A4 4 0 0 1 40 10 V44 L24 36 L8 44 V10 A4 4 0 0 1 12 6 Z" fill="currentColor" opacity="0.2" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+                                <!-- Stars on bookmark -->
+                                <path d="M24 14 L26 20 L32 20 L27 24 L29 30 L24 26 L19 30 L21 24 L16 20 L22 20 Z" fill="currentColor" opacity="0.85"/>
+                                <!-- Small bookmark behind -->
+                                <path d="M34 4 H42 A2 2 0 0 1 44 6 V18 L38 14 L32 18 V6 A2 2 0 0 1 34 4 Z" fill="currentColor" opacity="0.3"/>
+                                <!-- Dot accents -->
+                                <circle cx="8" cy="10" r="2" fill="currentColor" opacity="0.3"/>
+                                <circle cx="8" cy="16" r="1.5" fill="currentColor" opacity="0.2"/>
+                            </svg>
                         </div>
                         <h3>বুকমার্ক</h3>
                         <p>গুরুত্বপূর্ণ প্রশ্ন সেভ করুন</p>
@@ -227,8 +302,14 @@
         <!-- ═════ SYLLABUS SECTION ═════ -->
         <section id="syllabus-section" class="hidden syllabus-section-wrap">
             <div class="syllabus-header">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path></svg>
-                <h2>সিলেবাস</h2>
+                <!-- Dynamically replaced by JS -->
+                <div class="syllabus-header-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path><path d="m9 9.5 2 2 4-4"/></svg>
+                </div>
+                <div class="syllabus-header-text">
+                    <h2>সিলেবাস</h2>
+                    <p>৪র্থ সেমিস্টার — বিষয়ভিত্তিক পাঠ্যক্রম</p>
+                </div>
             </div>
             <div id="syllabus-grid" class="syllabus-grid"></div>
             <div id="syllabus-content-box" class="syllabus-content-box hidden">
@@ -245,7 +326,7 @@
     </main>
 
     <!-- FAB -->
-    <button id="fab" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="উপরে যান" style="display:none">
+    <button id="fab" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="উপরে যান">
         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
     </button>
 

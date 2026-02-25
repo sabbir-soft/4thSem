@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Data load error:', err);
             document.getElementById('content-area').innerHTML = `
                 <div class="no-results card p-8 mx-4 my-8">
-                    <div class="nr-icon">⚠️</div>
+                    <svg class="nr-icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
                     <p>দুঃখিত, ডেটা লোড করা যায়নি।<br><small>JSON ফাইলটি একই ফোল্ডারে আছে কিনা যাচাই করুন।</small></p>
                 </div>`;
         });
@@ -150,7 +150,9 @@ function showSubjectPicker(title, subtitle, mode) {
         const years = subj.years || [];
 
         btn.innerHTML = `
-            <span class="picker-icon">${subj.icon || '📘'}</span>
+            <span class="picker-icon ${getSubjectColor(key)}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${getSubjectSVG(key).match(/<svg[^>]*>([\s\S]*?)<\/svg>/s)?.[1] || ''}</svg>
+            </span>
             <div class="picker-info">
                 <span class="picker-name">${subj.name}</span>
                 <span class="picker-meta">${years.length > 0 ? years[0] + '–' + years[years.length-1] : ''} · ${totalMCQ > 0 ? totalMCQ + ' MCQ' : 'লিখিত'}</span>
@@ -377,6 +379,116 @@ function closeSearch() {
 // --------------------------------------------------------------------------
 // 4. Navigation & Subject Selection
 // --------------------------------------------------------------------------
+// Subject key → SVG icon map — Advanced Subject-Matched Icons v4.0
+const SUBJECT_SVG_ICONS = {
+    // বাংলা — Book with Bengali script pen motif
+    bangla: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+        <path d="M8 7h8M8 11h6M8 15h4"/>
+        <path d="M17.5 9.5 Q19 8 18.5 10.5" stroke-width="1.5"/>
+    </svg>`,
+
+    // ইংরেজি — Open book with speech bubble (language)
+    english: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+        <path d="M9 8h1m3 0h1"/>
+    </svg>`,
+
+    // আইসিটি — Computer monitor with circuit
+    ict: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="3" width="20" height="14" rx="2"/>
+        <path d="M8 21h8M12 17v4"/>
+        <circle cx="7" cy="10" r="1.5" fill="currentColor" opacity="0.5"/>
+        <circle cx="12" cy="10" r="1.5" fill="currentColor"/>
+        <circle cx="17" cy="10" r="1.5" fill="currentColor" opacity="0.5"/>
+        <path d="M7 10h2M13 10h2" stroke-dasharray="1 1"/>
+    </svg>`,
+
+    // শিক্ষা মনোবিজ্ঞান — Brain with neural connections
+    shikkhaMonobiggan: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 5a7 7 0 0 0-5.468 2.6A5 5 0 0 0 5 14a5 5 0 0 0 7 4.584A5 5 0 0 0 19 14a5 5 0 0 0-1.532-6.4A7 7 0 0 0 12 5z"/>
+        <path d="M12 5v2M9 8l1.5 1.5M15 8l-1.5 1.5M12 13v3"/>
+        <circle cx="12" cy="13" r="1.5" fill="currentColor" opacity="0.6"/>
+    </svg>`,
+
+    // শিক্ষায় আইসিটি — Laptop with wifi/educational signal
+    ict_in_edu: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="12" rx="2"/>
+        <path d="M2 20h20"/>
+        <path d="M12 11 Q10 9 12 7 Q14 9 12 11Z" fill="currentColor" opacity="0.5"/>
+        <path d="M8.5 14.5 Q12 10 15.5 14.5" stroke-width="1.5"/>
+        <path d="M6 16.5 Q12 8 18 16.5" stroke-width="1.2" opacity="0.5"/>
+    </svg>`,
+
+    // বাংলা পেপার-২ — Pen/writing
+    bangla_paper_2: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+        <path d="m15 5 4 4"/>
+        <path d="M8 20H4"/>
+    </svg>`,
+
+    // ইংরেজি পেপার-২ — Speech/dialog
+    english_paper_2: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        <path d="M8 9h8M8 13h5"/>
+    </svg>`,
+
+    // আইসিটি শিক্ষা পেপার-২ — Cloud/database
+    ict_education_2: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <ellipse cx="12" cy="5" rx="9" ry="3"/>
+        <path d="M3 5v4c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/>
+        <path d="M3 9v4c0 1.66 4.03 3 9 3s9-1.34 9-3V9"/>
+        <path d="M3 13v4c0 1.66 4.03 3 9 3s9-1.34 9-3v-4"/>
+    </svg>`,
+
+    // জেন্ডার শিক্ষা — Equality/balance scales
+    genderEducation: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2v6M8 2h8"/>
+        <circle cx="8" cy="14" r="4"/>
+        <circle cx="16" cy="14" r="4"/>
+        <path d="M8 18v2M16 18v2M6 20h4M14 20h4"/>
+        <path d="M5 8h14"/>
+    </svg>`,
+
+    // বিদ্যালয় সংগঠন — School building
+    organizationManagement: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 21h18M3 21V7l9-5 9 5v14"/>
+        <path d="M9 21v-6h6v6"/>
+        <rect x="10" y="9" width="4" height="4" rx="0.5"/>
+        <path d="M8 10V9M16 10V9"/>
+        <path d="M12 2v3"/>
+    </svg>`,
+
+    // ক্লাস নোট — Notepad with checkmark
+    classNotes: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <path d="M9 13l2 2 4-4"/>
+    </svg>`,
+
+    _default: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+        <path d="M8 7h8M8 11h6"/>
+    </svg>`
+};
+
+const SUBJECT_ICON_COLORS = {
+    bangla: 'c-blue', english: 'c-green', ict: 'c-cyan',
+    shikkhaMonobiggan: 'c-purple', ict_in_edu: 'c-indigo',
+    bangla_paper_2: 'c-rose', english_paper_2: 'c-teal',
+    ict_education_2: 'c-amber', genderEducation: 'c-pink',
+    organizationManagement: 'c-orange', classNotes: 'c-green',
+    _default: 'c-indigo'
+};
+
+function getSubjectSVG(key) {
+    return SUBJECT_SVG_ICONS[key] || SUBJECT_SVG_ICONS._default;
+}
+function getSubjectColor(key) {
+    return SUBJECT_ICON_COLORS[key] || SUBJECT_ICON_COLORS._default;
+}
+
 function renderNav() {
     const nav = document.getElementById('subject-nav');
     nav.innerHTML = '';
@@ -385,7 +497,15 @@ function renderNav() {
         const subject = allData[key];
         const btn = document.createElement('button');
         btn.className = 'neu-btn';
-        btn.innerHTML = `<span>${subject.icon || '📘'}</span><span>${subject.name}</span>`;
+        const iconSvg = getSubjectSVG(key);
+        const innerSVG = iconSvg.match(/<svg[^>]*>([\s\S]*?)<\/svg>/s)?.[1] || '';
+        const colorClass = getSubjectColor(key);
+        btn.innerHTML = `
+            <span class="nav-icon-wrap ${colorClass}" style="display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24">${innerSVG}</svg>
+            </span>
+            <span>${subject.name}</span>
+        `;
         btn.dataset.subject = key;
         btn.onclick = () => selectSubject(key);
         nav.appendChild(btn);
@@ -486,11 +606,11 @@ function renderFilters() {
     const available = subjectData.questions[currentState.year] || {};
 
     if (available.written?.length) {
-        const btn = createTypeBtn('written', '📝 লিখিত', currentState.type === 'written');
+        const btn = createTypeBtn('written', `<svg class="type-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> লিখিত`, currentState.type === 'written');
         typeFilter.appendChild(btn);
     }
     if (available.mcq?.length) {
-        const btn = createTypeBtn('mcq', '☑ MCQ', currentState.type === 'mcq');
+        const btn = createTypeBtn('mcq', `<svg class="type-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> MCQ`, currentState.type === 'mcq');
         typeFilter.appendChild(btn);
     }
 }
@@ -535,7 +655,9 @@ function renderQuestions(callback) {
     const questions = allData[subject]?.questions?.[year]?.[type] || [];
 
     if (questions.length === 0) {
-        display.innerHTML = `<div class="no-results card p-8"><div class="nr-icon">🔍</div><p>এই সালে এই ধরনের প্রশ্ন পাওয়া যায়নি।</p></div>`;
+        display.innerHTML = `<div class="no-results card p-8">
+            <svg class="nr-icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6"/><path d="M8 11h6"/></svg>
+            <p>এই সালে এই ধরনের প্রশ্ন পাওয়া যায়নি।</p></div>`;
         hideMCQScoreUI();
         return;
     }
@@ -781,11 +903,11 @@ function handleMCQOptionClick(optionEl, item, card) {
     const isCorrect = selectedIdx === correctIdx;
 
     correctEl.classList.add('correct');
-    correctEl.querySelector('.option-icon').textContent = '✔';
+    correctEl.querySelector('.option-icon').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg>`;
 
     if (!isCorrect) {
         optionEl.classList.add('incorrect');
-        optionEl.querySelector('.option-icon').textContent = '✖';
+        optionEl.querySelector('.option-icon').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
     }
 
     // Badge animate (like written q-num-badge active state)
@@ -858,7 +980,7 @@ function resetMCQAnswers() {
             el.style.pointerEvents = 'auto';
             el.setAttribute('tabindex', '0');
             el.classList.remove('correct', 'incorrect');
-            el.querySelector('.option-icon').textContent = '';
+            el.querySelector('.option-icon').innerHTML = '';
         });
         const badge = card.querySelector('.mcq-badge');
         if (badge) badge.classList.remove('hov', 'ans-ok', 'ans-no', 'pulse');
@@ -882,7 +1004,7 @@ function revealAllAnswers() {
                 el.style.pointerEvents = 'none'; // will lock after reveal
                 el.setAttribute('tabindex', '0');
                 el.classList.remove('correct', 'incorrect');
-                el.querySelector('.option-icon').textContent = '';
+                el.querySelector('.option-icon').innerHTML = '';
             });
             const badge = card.querySelector('.mcq-badge');
             if (badge) badge.classList.remove('hov', 'ans-ok', 'ans-no', 'pulse');
@@ -902,7 +1024,7 @@ function revealAllAnswers() {
                 el.removeAttribute('tabindex');
                 if (i === correctIdx) {
                     el.classList.add('correct');
-                    el.querySelector('.option-icon').textContent = '✔';
+                    el.querySelector('.option-icon').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg>`;
                 }
             });
 
@@ -1003,60 +1125,140 @@ function renderChart() {
 // --------------------------------------------------------------------------
 // 8. Syllabus
 // --------------------------------------------------------------------------
+// Subject-specific colors and labels for syllabus
+const SYL_META = {
+    bangla:              { color: 'syl-blue',   label: 'বাংলা পেপার-১' },
+    english:             { color: 'syl-green',  label: 'ইংরেজি পেপার-১' },
+    ict:                 { color: 'syl-cyan',   label: 'আইসিটি পেপার-১' },
+    shikkhaMonobiggan:   { color: 'syl-purple', label: 'শিক্ষা মনোবিজ্ঞান' },
+    ict_in_edu:          { color: 'syl-blue',   label: 'শিক্ষায় আইসিটি' },
+    bangla_paper_2:      { color: 'syl-rose',   label: 'বাংলা পেপার-২' },
+    english_paper_2:     { color: 'syl-teal',   label: 'ইংরেজি পেপার-২' },
+    ict_education_2:     { color: 'syl-amber',  label: 'আইসিটি পেপার-২' },
+    genderEducation:     { color: 'syl-pink',   label: 'জেন্ডার শিক্ষা' },
+    organizationManagement: { color: 'syl-orange', label: 'বিদ্যালয় সংগঠন' },
+};
+
 function showSyllabus() {
     hideAllSections();
-    document.getElementById('syllabus-section').classList.remove('hidden');
+    const section = document.getElementById('syllabus-section');
+    section.classList.remove('hidden');
     document.querySelectorAll('#subject-nav button').forEach(btn => btn.classList.remove('active'));
     currentState = { ...currentState, view: 'syllabus' };
 
     const grid = document.getElementById('syllabus-grid');
     grid.innerHTML = '';
 
-    const customNames = {
-        bangla: "বাংলা পেপার-১", english: "ইংরেজি পেপার-১",
-        ict: "আইসিটি শিক্ষা পেপার-১", shikkhaMonobiggan: "শিক্ষা মনোবিজ্ঞান ও নির্দেশনা",
-        ict_in_edu: "শিক্ষায় আইসিটি", bangla_paper_2: "বাংলা পেপার-২",
-        english_paper_2: "ইংরেজি পেপার-২", ict_education_2: "আইসিটি শিক্ষা পেপার-২",
-        genderEducation: "Gender Education", organizationManagement: "Organization & Management"
-    };
+    // Redesign header dynamically
+    const header = section.querySelector('.syllabus-header');
+    if (header) {
+        header.innerHTML = `
+            <div class="syllabus-header-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+                    <path d="m9 9.5 2 2 4-4"/>
+                </svg>
+            </div>
+            <div class="syllabus-header-text">
+                <h2>সিলেবাস</h2>
+                <p>৪র্থ সেমিস্টার — বিষয়ভিত্তিক পাঠ্যক্রম</p>
+            </div>
+        `;
+    }
 
-    Object.keys(allData.syllabus || {}).forEach(key => {
+    Object.keys(allData.syllabus || {}).forEach((key, index) => {
+        const meta = SYL_META[key] || { color: 'syl-blue', label: allData[key]?.name || key };
+        const displayName = meta.label || (allData[key]?.name) || key;
+        const svgContent = SUBJECT_SVG_ICONS[key] || SUBJECT_SVG_ICONS._default;
+        const innerSVG = svgContent.match(/<svg[^>]*>([\s\S]*?)<\/svg>/)?.[1] || '';
+
         const btn = document.createElement('button');
-        btn.className = 'syl-btn';
-        btn.textContent = customNames[key] || (allData[key]?.name) || key;
+        btn.className = `syl-btn ${meta.color}`;
+        btn.dataset.key = key;
+        btn.style.animationDelay = `${index * 0.05}s`;
+        btn.innerHTML = `
+            <div class="syl-btn-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${innerSVG}</svg>
+            </div>
+            <span class="syl-btn-label">${displayName}</span>
+        `;
         btn.onclick = () => {
             grid.querySelectorAll('.syl-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             renderSyllabusContent(key);
         };
+        // Apply scroll reveal
+        btn.classList.add('reveal-on-scroll');
         grid.appendChild(btn);
     });
 
     document.getElementById('syllabus-content-box').classList.add('hidden');
     document.getElementById('syllabus-content').innerHTML = '';
+
+    // Trigger animation
+    setTimeout(() => {
+        grid.querySelectorAll('.syl-btn').forEach(btn => animObserver.observe(btn));
+    }, 50);
 }
 
 function renderSyllabusContent(key, showTranslated = false) {
     const box = document.getElementById('syllabus-content-box');
     const content = document.getElementById('syllabus-content');
     const sylData = allData.syllabus?.[key];
+    const meta = SYL_META[key] || { color: 'syl-blue', label: allData[key]?.name || key };
+    const svgContent = SUBJECT_SVG_ICONS[key] || SUBJECT_SVG_ICONS._default;
+    const innerSVG = svgContent.match(/<svg[^>]*>([\s\S]*?)<\/svg>/)?.[1] || '';
 
     if (!sylData) {
         box.classList.remove('hidden');
-        content.innerHTML = '<p class="text-center text-gray-400">এই বিষয়ের সিলেবাস পাওয়া যায়নি।</p>';
+        box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        content.innerHTML = `<p class="text-center" style="color:var(--text-3);padding:2rem">এই বিষয়ের সিলেবাস পাওয়া যায়নি।</p>`;
         return;
     }
 
     box.classList.remove('hidden');
-    box.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
+    // Render a rich header above the content
+    const colorMap = {
+        'syl-blue': 'linear-gradient(135deg,#2563eb,#3b82f6)',
+        'syl-green': 'linear-gradient(135deg,#059669,#10b981)',
+        'syl-purple': 'linear-gradient(135deg,#7c3aed,#8b5cf6)',
+        'syl-cyan': 'linear-gradient(135deg,#0891b2,#06b6d4)',
+        'syl-rose': 'linear-gradient(135deg,#e11d48,#f43f5e)',
+        'syl-amber': 'linear-gradient(135deg,#d97706,#f59e0b)',
+        'syl-orange': 'linear-gradient(135deg,#ea580c,#f97316)',
+        'syl-pink': 'linear-gradient(135deg,#db2777,#ec4899)',
+        'syl-teal': 'linear-gradient(135deg,#0d9488,#14b8a6)',
+    };
+    const gradBg = colorMap[meta.color] || 'linear-gradient(135deg,var(--accent),var(--accent-2))';
+
+    // Build the box header
+    let existingHeader = box.querySelector('.syl-content-header');
+    if (!existingHeader) {
+        existingHeader = document.createElement('div');
+        existingHeader.className = 'syl-content-header';
+        box.insertBefore(existingHeader, content);
+    }
+    existingHeader.style.background = gradBg;
+    existingHeader.innerHTML = `
+        <div class="syl-content-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">${innerSVG}</svg>
+        </div>
+        <div class="syl-content-title">
+            <h3>${meta.label}</h3>
+            <p>${showTranslated ? 'অনুবাদ সংস্করণ' : 'মূল সিলেবাস'}</p>
+        </div>
+        <span class="syl-content-badge">${showTranslated ? 'অনুবাদ' : 'Syllabus'}</span>
+    `;
+
+    // Render content
     if (showTranslated && sylData.translated) {
         content.innerHTML = sylData.translated;
         appendSylToggleBtn(content, key, false, 'মূল সিলেবাস দেখুন');
     } else {
         content.innerHTML = sylData.content;
         if (sylData.translated) {
-            appendSylToggleBtn(content, key, true, '🔤 অনুবাদ দেখুন');
+            appendSylToggleBtn(content, key, true, 'বাংলা অনুবাদ দেখুন');
         }
     }
 
@@ -1069,6 +1271,9 @@ function renderSyllabusContent(key, showTranslated = false) {
             wrapper.appendChild(table);
         }
     });
+
+    // Scroll into view after a brief moment
+    setTimeout(() => box.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
 }
 
 function appendSylToggleBtn(container, key, showTranslated, label) {
@@ -1201,7 +1406,7 @@ function renderBookmarksList() {
                     <div class="mcq-options mt-2">
                         ${(item.o || []).map((o, i) => `<div class="mcq-option ${i === item.a ? 'correct' : ''}" style="pointer-events:none">
                             <span class="opt-letter">${letters[i]}</span><span>${o}</span>
-                            ${i === item.a ? '<span class="option-icon">✔</span>' : ''}
+                        ${i === item.a ? `<span class="option-icon correct" style="pointer-events:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg></span>` : '<span class="option-icon"></span>'}
                         </div>`).join('')}
                     </div>
                 </div>`;
@@ -1265,14 +1470,14 @@ function renderHomeStats() {
     });
 
     const stats = [
-        { num: totalSubjects, label: 'মোট বিষয়', icon: '📚' },
-        { num: totalWritten, label: 'লিখিত প্রশ্ন', icon: '📝' },
-        { num: totalMCQ, label: 'MCQ প্রশ্ন', icon: '☑️' },
+        { num: totalSubjects, label: 'মোট বিষয়', svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>` },
+        { num: totalWritten, label: 'লিখিত প্রশ্ন', svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>` },
+        { num: totalMCQ, label: 'MCQ প্রশ্ন', svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>` },
     ];
 
     container.innerHTML = stats.map(s => `
         <div class="stat-item card">
-            <div class="s-icon">${s.icon}</div>
+            <div class="s-icon-svg">${s.svg}</div>
             <div class="s-num" data-target="${s.num}">0</div>
             <div class="s-label">${s.label}</div>
         </div>
@@ -1325,6 +1530,13 @@ function sanitizeContent(element) {
             table.parentNode.insertBefore(wrapper, table);
             wrapper.appendChild(table);
         }
+        // Add has-overflow class if table is wider than wrapper
+        requestAnimationFrame(() => {
+            const w = table.parentNode;
+            if (w && w.scrollWidth > w.clientWidth) {
+                w.classList.add('has-overflow');
+            }
+        });
     });
 }
 
@@ -1348,11 +1560,15 @@ function setupThemeToggle() {
     }
 
     track.addEventListener('click', () => {
-        const isDark = !document.body.classList.contains('dark');
-        document.body.classList.toggle('dark', isDark);
-        localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        updateToggleUI();
-        if (topicChart) setTimeout(renderChart, 50);
+        document.body.classList.add('theme-switching');
+        requestAnimationFrame(() => {
+            const isDark = !document.body.classList.contains('dark');
+            document.body.classList.toggle('dark', isDark);
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateToggleUI();
+            if (topicChart) setTimeout(renderChart, 50);
+            setTimeout(() => document.body.classList.remove('theme-switching'), 50);
+        });
     });
 
     track.addEventListener('keydown', (e) => {
@@ -1368,24 +1584,101 @@ function applyTheme() {
 }
 
 // --------------------------------------------------------------------------
-// 13. FAB (Back to Top)
+// 13. FAB (Back to Top) — Smart Mobile Behavior
 // --------------------------------------------------------------------------
 function setupFAB() {
     const fab = document.getElementById('fab');
+    const isMobile = () => window.innerWidth < 768 ||
+                           ('ontouchstart' in window && window.innerWidth < 1024);
+
+    let lastScrollY    = 0;
+    let ticking        = false;
+    let hideTimer      = null;
+    const SHOW_THRESH  = 400;   // এর নিচে সবসময় লুকানো
+    const SCROLL_DELTA = 6;     // এতটুকু scroll হলে direction detect করবে
+
+    function updateFAB() {
+        const currentY  = window.scrollY;
+        const scrolled  = currentY > SHOW_THRESH;
+
+        if (!scrolled) {
+            // পেজের শুরুতে — লুকাও
+            fab.classList.remove('fab-visible', 'fab-peek');
+            lastScrollY = currentY;
+            ticking = false;
+            return;
+        }
+
+        if (isMobile()) {
+            // ─── মোবাইল: স্মার্ট behavior ───
+            const diff = currentY - lastScrollY;
+
+            if (diff > SCROLL_DELTA) {
+                // নিচে scroll করছে → লুকাও
+                fab.classList.remove('fab-visible');
+                fab.classList.add('fab-peek');   // ছোট dot হিসেবে থাকবে
+
+                // hideTimer: স্ক্রল থামলে ৩ সেকেন্ড পরে পুরো লুকাও
+                clearTimeout(hideTimer);
+                hideTimer = setTimeout(() => {
+                    fab.classList.remove('fab-peek');
+                }, 3000);
+
+            } else if (diff < -SCROLL_DELTA) {
+                // উপরে scroll করছে → দেখাও
+                clearTimeout(hideTimer);
+                fab.classList.remove('fab-peek');
+                fab.classList.add('fab-visible');
+            }
+        } else {
+            // ─── Desktop: আগের মতো সহজ behavior ───
+            fab.classList.remove('fab-peek');
+            fab.classList.toggle('fab-visible', scrolled);
+        }
+
+        lastScrollY = currentY;
+        ticking = false;
+    }
+
     window.addEventListener('scroll', () => {
-        fab.style.display = window.scrollY > 400 ? 'flex' : 'none';
+        if (!ticking) {
+            requestAnimationFrame(updateFAB);
+            ticking = true;
+        }
+    }, { passive: true });
+
+    // স্ক্রল থামার পর ১.৫ সেকেন্ড পরে মোবাইলে FAB দেখাও
+    let stopTimer = null;
+    window.addEventListener('scroll', () => {
+        if (!isMobile()) return;
+        clearTimeout(stopTimer);
+        if (window.scrollY > SHOW_THRESH) {
+            stopTimer = setTimeout(() => {
+                fab.classList.remove('fab-peek');
+                fab.classList.add('fab-visible');
+            }, 1500);
+        }
     }, { passive: true });
 }
 
 // --------------------------------------------------------------------------
 // 14. Toast Notifications
 // --------------------------------------------------------------------------
+const TOAST_ICONS = {
+    success: `<svg class="t-icon-svg success-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
+    warning: `<svg class="t-icon-svg warning-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>`,
+    error:   `<svg class="t-icon-svg error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`,
+    info:    `<svg class="t-icon-svg info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>`
+};
+
 function showToast(message, type = 'info') {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.innerHTML = message;
-
+    toast.className = `toast ${type}`;
+    const icon = TOAST_ICONS[type] || TOAST_ICONS.info;
+    // Strip emoji from message if present (leading emoji pattern)
+    const cleanMsg = message.replace(/^[\u{1F000}-\u{1FFFF}\u{2600}-\u{27FF}\u{2700}-\u{27BF}\uFE0F✅❌⭐🎉📖⏸▶🗑✓]+\s*/u, '');
+    toast.innerHTML = `${icon}<span>${cleanMsg || message}</span>`;
     container.appendChild(toast);
     setTimeout(() => {
         toast.classList.add('out');
@@ -1954,7 +2247,7 @@ function renderNotes() {
 
     const notes = allData[subject].subjects?.[noteSubject] || [];
     if (notes.length === 0) {
-        display.innerHTML = `<div class="no-results card p-8"><div class="nr-icon">📓</div><p>এই বিষয়ের নোট পাওয়া যায়নি।</p></div>`;
+        display.innerHTML = `<div class="no-results card p-8"><svg class="nr-icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg><p>এই বিষয়ের নোট পাওয়া যায়নি।</p></div>`;
         return;
     }
 
