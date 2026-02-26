@@ -314,6 +314,8 @@ body.dark #top-sticky-bar {
 }
 body.dark .search-result-item { border-bottom-color: rgba(255,255,255,0.04); }
 .search-result-item:hover { background: rgba(99,102,241,0.08); }
+.search-result-item:focus { background: rgba(99,102,241,0.1); outline: none; }
+.search-result-item.focused { background: rgba(99,102,241,0.1); }
 .search-result-item:last-child { border-bottom: none; }
 .search-result-item .sr-tag {
     font-size: 0.65rem;
@@ -834,6 +836,8 @@ body.dark .table-wrapper {
 .answer-content th {
     padding: 0.75rem 1rem;
     text-align: left;
+    /* ✅ FIX: explicit background on th so light mode shows gradient header */
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
     color: #fff;
     font-weight: 700;
     font-size: 0.85rem;
@@ -876,13 +880,16 @@ body.dark .answer-content tbody tr:nth-child(even) td {
     }
 }
 
-/* Dark mode borders */
+/* Dark mode table borders */
 body.dark .answer-content td,
 body.dark .answer-content th {
     border-color: rgba(124,127,245,0.12);
 }
 body.dark .answer-content th {
     border-right-color: rgba(255,255,255,0.14);
+    /* Dark mode: keep the gradient but slightly adjusted for dark bg context */
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+    color: #fff;
 }
 
 /* ════════════════════════════
@@ -2502,7 +2509,8 @@ body.dark .table-wrapper {
     font-variant-numeric: tabular-nums;
 }
 
-/* Header */
+/* Header — background must be on <th> directly (not just thead tr)
+   because border-collapse:separate breaks background inheritance in some browsers */
 .answer-content thead tr {
     background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%) !important;
     position: sticky;
@@ -2512,6 +2520,8 @@ body.dark .table-wrapper {
 .answer-content th {
     padding: 0.85rem 1.1rem !important;
     text-align: left !important;
+    /* ✅ FIX: background explicitly on th — prevents white header in light mode */
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%) !important;
     color: #fff !important;
     font-weight: 700 !important;
     font-size: 0.8rem !important;
@@ -2520,6 +2530,8 @@ body.dark .table-wrapper {
     white-space: nowrap !important;
     border-right: 1px solid rgba(255,255,255,0.18) !important;
     position: relative !important;
+    /* Smooth transition for dark/light switch */
+    transition: background 0.25s ease !important;
 }
 .answer-content th::after {
     content: '';
@@ -2575,6 +2587,8 @@ body.dark .answer-content td {
 }
 body.dark .answer-content th {
     border-right-color: rgba(255,255,255,0.12) !important;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%) !important;
+    color: #fff !important;
 }
 
 /* Row number badge for first TD (optional via JS) */
@@ -4064,3 +4078,539 @@ header p.subtitle { margin-top: 0.2rem !important; margin-bottom: 0 !important; 
     #subject-nav { padding: 0.5rem 1rem !important; gap: 0.5rem !important; }
     #intro-section > .card { padding: 1.5rem 2rem !important; }
 }
+
+/* ==========================================================================
+   FINE-TUNING PATCH — Light mode table fix + Smooth polish
+   ========================================================================== */
+
+/* ── TABLE HEADER: Universal Fix (light + dark) ──
+   Ensures gradient always shows regardless of collapse mode or browser */
+.answer-content thead th,
+.answer-content table thead tr th {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%) !important;
+    color: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+/* Force table-wrapper background to match surface — prevents bleedthrough */
+.table-wrapper {
+    background: var(--surface) !important;
+}
+
+/* ── SMOOTH SECTION TRANSITIONS ── */
+#intro-section,
+#filter-section,
+#question-display,
+#syllabus-section,
+#bookmarks-section,
+#chart-section,
+#progress-section {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* ── BUTTON ACTIVE FEEDBACK — instant press feel ── */
+.neu-btn,
+.syl-btn,
+.subject-picker-btn,
+.year-btn {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+/* ── SELECT OPTION — dark mode text fix ── */
+body.dark select option {
+    background: var(--surface);
+    color: var(--text);
+}
+
+/* ── SEARCH INPUT — autocomplete bg fix ── */
+#global-search:-webkit-autofill,
+#global-search:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px var(--surface) inset !important;
+    -webkit-text-fill-color: var(--text) !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+/* ── ACCORDION: prevent layout shift on open/close ── */
+.q-accordion {
+    contain: layout style;
+    will-change: box-shadow, border-color;
+}
+
+/* ── MCQ OPTION: smooth border radius on mobile ── */
+.mcq-option {
+    -webkit-appearance: none;
+}
+
+/* ── FILTER WRAP: prevent content overflow ── */
+.filter-wrap {
+    min-width: 0;
+}
+.filter-group {
+    min-width: 0;
+    flex-shrink: 1;
+}
+
+/* ── SMOOTH SCROLL for anchor links ── */
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 72px; /* account for sticky bar height */
+}
+
+/* ── STICKY BAR: ensure it covers content below ── */
+#top-sticky-bar {
+    isolation: isolate;
+}
+
+/* ── TOAST: prevent overflow on very small screens ── */
+#toast-container {
+    max-width: calc(100vw - 3rem);
+}
+@media (max-width: 400px) {
+    #toast-container {
+        right: 0.75rem;
+        bottom: 1rem;
+    }
+    .toast {
+        font-size: 0.8rem;
+        padding: 0.65rem 0.9rem;
+    }
+}
+
+/* ── MODAL: smooth bottom sheet on all heights ── */
+#modal-box {
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ── CHART: canvas anti-aliasing ── */
+#chart-section canvas {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+}
+
+/* ── PROGRESS FILL: shimmer only when active ── */
+.read-progress-bar-fill:not([style*="width: 0"]) {
+    animation: progressShimmer 2.5s ease infinite;
+}
+
+/* ── Q-BODY: no layout reflow during animation ── */
+.q-body > * {
+    min-height: 0;
+    contain: none;
+}
+
+/* ── FEATURE CARD: prevent text overflow on small screens ── */
+.feature-card h3 {
+    word-break: keep-all;
+    overflow-wrap: break-word;
+}
+
+/* ── BOOKMARKS: empty state padding ── */
+#bookmarks-section .empty-state {
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ── SYLLABUS content: smoother paragraph spacing ── */
+#syllabus-content p + p {
+    margin-top: 0;
+}
+#syllabus-content ul li + li,
+#syllabus-content ol li + li {
+    margin-top: 0.2rem;
+}
+
+/* ── Answer content: better code/pre styling ── */
+.answer-content code {
+    background: rgba(91,94,244,0.08);
+    color: var(--accent);
+    padding: 0.15rem 0.4rem;
+    border-radius: 5px;
+    font-family: 'Inter', monospace;
+    font-size: 0.85em;
+    font-weight: 600;
+}
+body.dark .answer-content code {
+    background: rgba(124,127,245,0.15);
+    color: var(--accent-2);
+}
+.answer-content pre {
+    background: rgba(91,94,244,0.04);
+    border: 1px solid rgba(91,94,244,0.1);
+    border-radius: 10px;
+    padding: 1rem;
+    overflow-x: auto;
+    margin: 0.75rem 0;
+}
+
+/* ── HEADING animations: only when section enters ── */
+.answer-content h2:first-child,
+.answer-content h1:first-child {
+    margin-top: 0;
+}
+
+/* ── Search dropdown: better scrollbar ── */
+#search-results-dropdown::-webkit-scrollbar { width: 4px; }
+#search-results-dropdown::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 99px;
+}
+
+/* ── Shortcut box heading ── */
+#shortcut-box h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 1rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid rgba(91,94,244,0.12);
+}
+body.dark #shortcut-box h3 {
+    border-bottom-color: rgba(124,127,245,0.15);
+}
+
+/* ── FAB tooltip on desktop ── */
+@media (hover: hover) and (pointer: fine) {
+    #fab::after {
+        content: attr(title);
+        position: absolute;
+        left: calc(100% + 10px);
+        top: 50%;
+        transform: translateY(-50%);
+        background: var(--surface-2);
+        color: var(--text);
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+        padding: 0.35rem 0.75rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+        font-family: 'Kalpurush', 'Inter', sans-serif;
+    }
+    #fab:hover::after {
+        opacity: 1;
+    }
+}
+
+/* ── Table: first column always visible on overflow scroll ── */
+@media (max-width: 640px) {
+    .answer-content td:first-child,
+    .answer-content th:first-child {
+        min-width: 80px;
+    }
+}
+
+/* ── Stat number: prevent reflow during count-up ── */
+.s-num {
+    min-width: 1.5rem;
+    display: inline-block;
+    text-align: center;
+}
+
+/* ── Global image rendering ── */
+img {
+    display: block;
+    max-width: 100%;
+}
+
+/* ==========================================================================
+   POLISHED PATCH v5.0 — All fixes consolidated, no conflicts
+   ========================================================================== */
+
+/* ── Meta text (bookmarks/notes) — dark mode aware ── */
+.bm-meta {
+    color: var(--text-3);
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+.picker-empty-msg {
+    color: var(--text-3);
+    font-size: 0.9rem;
+    font-family: 'Kalpurush', 'Inter', sans-serif;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ACCORDION SPACING — উত্তরের নিচের ফাঁকা কমানো
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   Stack analysis (top → bottom):
+     answer-content padding-bottom  : 0.75rem  (base)
+     answer-actions margin-top       : 1rem     (base)
+     answer-actions padding-top      : 1rem     (base)
+     q-body.open padding-bottom      : 1.5rem   (base)
+     ─────────────────────────────────────────────────
+     Total bottom gap                : ~4.25rem  ← too much
+
+   Target (with action buttons present):
+     answer-content padding-bottom   : 0
+     answer-actions margin-top        : 0.45rem
+     answer-actions padding-top       : 0.45rem
+     q-body.open padding-bottom       : 0.55rem
+     ─────────────────────────────────────────────────
+     Total bottom gap                 : ~1.45rem  ← natural
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+/* answer-content — শেষ child .answer-actions হলে bottom padding শূন্য */
+.answer-content {
+    padding-bottom: 0 !important;
+}
+
+/* শেষ paragraph/list/heading এর margin-bottom শূন্য */
+.answer-content > p:last-of-type,
+.answer-content > ul:last-child,
+.answer-content > ol:last-child,
+.answer-content > h2:last-child,
+.answer-content > h3:last-child,
+.answer-content > .table-wrapper:last-child {
+    margin-bottom: 0 !important;
+}
+
+/* body content পরিমিত spacing */
+.answer-content p    { margin-bottom: 0.72rem !important; }
+.answer-content li   { margin-bottom: 0.32rem !important; }
+.answer-content h1,
+.answer-content h2   { margin: 0.95rem 0 0.45rem !important; }
+.answer-content h3   { margin: 0.8rem 0 0.38rem !important; }
+.answer-content h1:first-child,
+.answer-content h2:first-child { margin-top: 0 !important; }
+
+/* ── answer-actions row — tight but breathable ── */
+.answer-actions {
+    padding-top: 0.45rem !important;
+    margin-top:  0.45rem !important;
+    padding-bottom: 0 !important;
+    margin-bottom:  0 !important;
+    gap: 0.38rem !important;
+}
+
+/* ── q-body open — এখন action row নিজেই নিচের border ── */
+.q-body.open {
+    padding: 0 1.25rem 0.55rem !important;
+}
+
+/* ── Mobile ── */
+@media (max-width: 640px) {
+    .answer-content {
+        padding: 0.88rem 0.82rem 0 !important;
+        font-size: 0.92rem !important;
+        line-height: 1.76 !important;
+    }
+    .answer-content p { text-align: left !important; hyphens: none !important; }
+    .q-body.open { padding: 0 0.82rem 0.45rem !important; }
+    .answer-actions {
+        padding-top: 0.38rem !important;
+        margin-top:  0.38rem !important;
+        gap: 0.3rem !important;
+    }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ACCORDION POLISH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.q-accordion {
+    border-radius: 18px !important;
+    will-change: box-shadow;
+    transition: box-shadow 0.28s ease, border-color 0.28s ease, transform 0.18s ease !important;
+}
+@media (hover: hover) and (pointer: fine) {
+    .q-accordion:hover { transform: translateY(-1px); }
+}
+.q-body {
+    transition:
+        grid-template-rows 0.36s cubic-bezier(0.4,0,0.2,1),
+        opacity 0.26s ease,
+        padding 0.26s ease !important;
+}
+.q-chevron {
+    transition: transform 0.32s cubic-bezier(0.4,0,0.2,1),
+                background 0.22s ease,
+                box-shadow 0.22s ease !important;
+    flex-shrink: 0 !important;
+}
+.q-header { padding: 0.88rem 1.05rem !important; gap: 0.65rem !important; }
+@media (max-width: 640px) {
+    .q-header { padding: 0.78rem 0.88rem !important; font-size: 0.89rem !important; }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   MCQ OPTION POLISH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.mcq-option {
+    transition: background 0.2s ease, border-color 0.2s ease,
+                color 0.2s ease, transform 0.16s ease, box-shadow 0.2s ease !important;
+    will-change: transform, background;
+}
+.mcq-option:active { transform: scale(0.975) !important; }
+@media (hover: none) {
+    .mcq-option:hover {
+        transform: none !important;
+        border-color: transparent !important;
+        background: var(--bg2) !important;
+        color: var(--text) !important;
+    }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   DARK MODE: MCQ correct/incorrect
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+body.dark .mcq-option.correct {
+    background: rgba(16,185,129,0.15) !important;
+    color: #6ee7b7 !important;
+    border-color: rgba(16,185,129,0.5) !important;
+}
+body.dark .mcq-option.incorrect {
+    background: rgba(244,63,94,0.13) !important;
+    color: #fca5a5 !important;
+    border-color: rgba(244,63,94,0.45) !important;
+}
+body.dark .mcq-option { color: var(--text); }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   DARK MODE: Action buttons
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+body.dark .answer-actions { border-top-color: rgba(124,127,245,0.15) !important; }
+body.dark .action-btn {
+    border-color: rgba(124,127,245,0.2) !important;
+    background: rgba(124,127,245,0.06) !important;
+    color: var(--text-3) !important;
+}
+body.dark .action-btn:hover {
+    border-color: var(--accent-2) !important;
+    color: var(--accent-2) !important;
+    background: rgba(124,127,245,0.12) !important;
+}
+body.dark .action-btn.read-done {
+    border-color: var(--accent-4) !important;
+    color: var(--accent-4) !important;
+    background: rgba(16,185,129,0.1) !important;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   DARK MODE: Search, Table, general
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+body.dark #search-results-dropdown {
+    background: var(--surface-2);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.45), 0 0 0 1px rgba(124,127,245,0.18);
+}
+body.dark .search-result-item { border-bottom-color: rgba(255,255,255,0.05); }
+body.dark .search-result-item:hover,
+body.dark .search-result-item.focused { background: rgba(124,127,245,0.1); }
+body.dark mark { background: rgba(124,127,245,0.25); color: var(--accent-2); }
+body.dark .table-wrapper { background: var(--surface-2) !important; }
+body.dark .answer-content td {
+    background: var(--surface-2);
+    color: var(--text) !important;
+    border-color: rgba(124,127,245,0.1) !important;
+}
+body.dark .answer-content tbody tr:nth-child(even) td {
+    background: rgba(124,127,245,0.07) !important;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   SCROLL PROGRESS BAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+#scroll-progress-bar {
+    height: 3px !important;
+    border-radius: 0 99px 99px 0;
+    will-change: width;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   REVEAL ANIMATION — subtler, faster
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(14px) !important;
+    transition: opacity 0.4s cubic-bezier(0.4,0,0.2,1),
+                transform 0.4s cubic-bezier(0.4,0,0.2,1) !important;
+}
+.reveal-on-scroll.is-visible { opacity: 1 !important; transform: translateY(0) !important; }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   TOAST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.toast {
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(99,102,241,0.12) !important;
+}
+body.dark .toast {
+    border-color: rgba(124,127,245,0.18) !important;
+    background: rgba(33,37,58,0.95) !important;
+}
+@keyframes toastIn {
+    from { transform: translateX(50px) scale(0.95); opacity: 0; }
+    to   { transform: translateX(0) scale(1); opacity: 1; }
+}
+@keyframes toastOut {
+    from { transform: translateX(0) scale(1); opacity: 1; }
+    to   { transform: translateX(50px) scale(0.95); opacity: 0; }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   NEU-BTN focus & active
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.neu-btn:focus-visible {
+    outline: 2.5px solid var(--accent);
+    outline-offset: 2px;
+}
+.neu-btn:active {
+    transform: translateY(1px) scale(0.974) !important;
+    transition-duration: 0.08s !important;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   MOBILE: no sticky hover
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+@media (hover: none) {
+    .neu-btn:hover,
+    .q-accordion:hover,
+    .mcq-card:hover,
+    .stat-item:hover,
+    .feature-card:hover {
+        transform: none !important;
+        box-shadow: inherit !important;
+    }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   MOBILE: keyboard shortcut panel hidden
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+@media (hover: none), (pointer: coarse) {
+    #shortcut-panel,
+    #shortcut-panel.open {
+        pointer-events: none !important;
+        opacity: 0 !important;
+    }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   iOS safe area
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    #fab       { bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px)); }
+    #study-timer { bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px)); }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   GLOBAL PERFORMANCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+html { scrollbar-gutter: stable; }
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+.card, .mcq-card { will-change: box-shadow; transform: translateZ(0); }
+#top-sticky-bar  { will-change: backdrop-filter; transform: translateZ(0); }
+#fab             { will-change: transform, opacity; }

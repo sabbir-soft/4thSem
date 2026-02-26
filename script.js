@@ -135,7 +135,7 @@ function showSubjectPicker(title, subtitle, mode) {
     const subjects = Object.keys(allData).filter(k => k !== 'syllabus' && !allData[k].isNoteCategory && allData[k].questions);
 
     if (subjects.length === 0) {
-        list.innerHTML = '<p class="text-center text-gray-400 py-4">কোনো বিষয় পাওয়া যায়নি।</p>';
+        list.innerHTML = '<p class="text-center picker-empty-msg py-4">কোনো বিষয় পাওয়া যায়নি।</p>';
     }
 
     subjects.forEach(key => {
@@ -290,9 +290,11 @@ function setupSearch() {
     const input = document.getElementById('global-search');
     const dropdown = document.getElementById('search-results-dropdown');
     let debounceTimer;
+    let focusedIdx = -1;
 
     input.addEventListener('input', () => {
         clearTimeout(debounceTimer);
+        focusedIdx = -1;
         debounceTimer = setTimeout(() => {
             const query = input.value.trim();
             if (query.length < 2) { closeSearch(); return; }
@@ -303,6 +305,29 @@ function setupSearch() {
     input.addEventListener('focus', () => {
         const query = input.value.trim();
         if (query.length >= 2) performSearch(query);
+    });
+
+    // Keyboard navigation within dropdown
+    input.addEventListener('keydown', (e) => {
+        const items = dropdown.querySelectorAll('.search-result-item');
+        if (!items.length) return;
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            focusedIdx = Math.min(focusedIdx + 1, items.length - 1);
+            items.forEach((el, i) => el.classList.toggle('focused', i === focusedIdx));
+            items[focusedIdx]?.scrollIntoView({ block: 'nearest' });
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            focusedIdx = Math.max(focusedIdx - 1, 0);
+            items.forEach((el, i) => el.classList.toggle('focused', i === focusedIdx));
+            items[focusedIdx]?.scrollIntoView({ block: 'nearest' });
+        } else if (e.key === 'Enter' && focusedIdx >= 0) {
+            e.preventDefault();
+            items[focusedIdx]?.click();
+        } else if (e.key === 'Escape') {
+            closeSearch();
+        }
     });
 
     document.addEventListener('click', (e) => {
@@ -331,6 +356,7 @@ function performSearch(query) {
         const div = document.createElement('div');
         div.className = 'search-result-item';
         div.setAttribute('role', 'option');
+        div.setAttribute('tabindex', '0');
 
         const highlighted = item.q.replace(
             new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'),
@@ -361,11 +387,11 @@ function performSearch(query) {
                         if (cards[item.idx]) {
                             cards[item.idx].scrollIntoView({ behavior: 'smooth', block: 'center' });
                             const header = cards[item.idx].querySelector('.q-header');
-                            if (header) header.click();
+                            if (header && !header.classList.contains('active')) header.click();
                         }
                     }, 400);
                 });
-            }, 100);
+            }, 150);
         };
 
         dropdown.appendChild(div);
@@ -524,7 +550,14 @@ function selectSubject(key) {
     hideAllSections();
     document.getElementById('filter-section').classList.remove('hidden');
 
+    // Reset year/type when switching subjects — prevents stale state from previous subject
+    const prevSubject = currentState.subject;
     currentState.subject = key;
+
+    if (prevSubject !== key) {
+        currentState.year = null;
+        currentState.type = null;
+    }
 
     // Handle class notes category
     if (subjectData.isNoteCategory) {
@@ -533,9 +566,13 @@ function selectSubject(key) {
     }
 
     currentState.year = currentState.year || String(subjectData.years[0]);
+    // Ensure the stored year actually exists for this subject
+    if (!subjectData.years.includes(Number(currentState.year)) && !subjectData.years.includes(currentState.year)) {
+        currentState.year = String(subjectData.years[0]);
+    }
     const availableTypes = subjectData.questions[currentState.year] || {};
     currentState.type = currentState.type ||
-        ((availableTypes.written?.length ? 'written' : 'mcq'));
+        (availableTypes.written?.length ? 'written' : 'mcq');
 
     // Chart
     if (subjectData.analysis?.data?.length > 0) {
@@ -618,6 +655,7 @@ function renderFilters() {
 function createTypeBtn(type, label, isActive) {
     const btn = document.createElement('button');
     btn.className = `neu-btn text-sm ${isActive ? 'active' : ''}`;
+    btn.dataset.type = type;
     btn.innerHTML = label;
     btn.onclick = () => handleTypeChange(type);
     return btn;
@@ -636,7 +674,7 @@ function handleYearChange() {
 function handleTypeChange(type) {
     currentState.type = type;
     document.querySelectorAll('#type-filter button').forEach(btn => {
-        btn.classList.toggle('active', btn.textContent.includes(type === 'mcq' ? 'MCQ' : 'লিখিত'));
+        btn.classList.toggle('active', btn.dataset.type === type);
     });
     renderQuestions();
     updateHashFromState();
@@ -746,8 +784,9 @@ function toggleAccordion(header, body) {
     const isOpen = body.classList.contains('open');
     const accordion = header.closest('.q-accordion');
 
-    // Close all others first
-    document.querySelectorAll('#question-display .q-body.open').forEach(b => {
+    // Close all open accordions within the same parent container
+    const parentContainer = accordion?.parentElement || document;
+    parentContainer.querySelectorAll('.q-body.open').forEach(b => {
         b.classList.remove('open');
         b.previousElementSibling?.classList.remove('active');
         b.closest('.q-accordion')?.classList.remove('is-open');
@@ -758,42 +797,31 @@ function toggleAccordion(header, body) {
         header.classList.add('active');
         accordion?.classList.add('is-open');
 
-        // Smart scroll: after content expands, ensure the header stays in view
-        // We wait for the CSS transition to complete (max-height animates)
-        const stickyBarH = (document.getElementById('top-sticky-bar')?.offsetHeight || 60) + 12;
+        const stickyH = (document.getElementById('top-sticky-bar')?.offsetHeight || 60) + 8;
 
-        // Immediate check: if header is above viewport, scroll to it
-        const scrollToHeader = () => {
+        const scrollIntoView = () => {
             const rect = header.getBoundingClientRect();
-            const viewH = window.innerHeight;
-
-            // If header is above sticky bar, bring it into view
-            if (rect.top < stickyBarH) {
+            if (rect.top < stickyH) {
+                // Header hidden above sticky bar — scroll it into view
                 window.scrollTo({
-                    top: header.getBoundingClientRect().top + window.scrollY - stickyBarH,
+                    top: window.scrollY + rect.top - stickyH,
                     behavior: 'smooth'
                 });
-                return;
-            }
-
-            // If header is in view but the answer body will push it off screen,
-            // scroll just enough so header stays at top with padding
-            if (rect.top > stickyBarH + 8) {
-                // It's visible — check if after expansion it stays visible
-                // Scroll header to near top so user can read both Q and A
-                const targetTop = header.getBoundingClientRect().top + window.scrollY - stickyBarH - 8;
-                const currentTop = window.scrollY;
-                if (targetTop < currentTop) {
-                    window.scrollTo({ top: targetTop, behavior: 'smooth' });
+            } else if (rect.top > stickyH + 4) {
+                // Header is visible and below sticky bar — align gently to top
+                const target = window.scrollY + rect.top - stickyH - 4;
+                if (target < window.scrollY) {
+                    window.scrollTo({ top: target, behavior: 'smooth' });
                 }
-                // else: already in good position, don't scroll
             }
         };
 
-        // Run immediately and after transition for mobile
-        requestAnimationFrame(scrollToHeader);
-        setTimeout(scrollToHeader, 50);
-        setTimeout(scrollToHeader, 350);
+        // Single well-timed scroll after transition starts
+        requestAnimationFrame(() => {
+            scrollIntoView();
+            // Second pass for mobile where rAF fires before layout
+            setTimeout(scrollIntoView, 80);
+        });
     }
 }
 
@@ -987,6 +1015,8 @@ function resetMCQAnswers() {
     });
     document.getElementById('mcq-score').textContent = '0';
     document.getElementById('mcq-progress-bar').style.width = '0%';
+    const total = parseInt(document.getElementById('mcq-total').textContent || '0');
+    updatePillScore(0, total);
     showToast('✅ রিসেট হয়েছে', 'info');
 }
 
@@ -1035,7 +1065,11 @@ function revealAllAnswers() {
             }
         });
 
-        updateMCQScore();
+        // Update score: revealed cards count as correct (full score)
+        const total = mcqCards.length;
+        document.getElementById('mcq-score').textContent = total;
+        document.getElementById('mcq-progress-bar').style.width = '100%';
+        updatePillScore(total, total);
         showToast('📖 সব সঠিক উত্তর দেখানো হয়েছে', 'success');
         return;
     }
@@ -1232,7 +1266,7 @@ function renderSyllabusContent(key, showTranslated = false) {
     };
     const gradBg = colorMap[meta.color] || 'linear-gradient(135deg,var(--accent),var(--accent-2))';
 
-    // Build the box header
+    // Build or update the box header (never duplicate)
     let existingHeader = box.querySelector('.syl-content-header');
     if (!existingHeader) {
         existingHeader = document.createElement('div');
@@ -1311,12 +1345,8 @@ function toggleBookmark(event, subject, year, type, idx) {
     localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
     updateBookmarkBadge();
 
-    // Update all bookmark icons on page
-    document.querySelectorAll(`.bookmark-btn`).forEach(btn => {
-        if (btn.onclick?.toString().includes(`'${subject}', '${year}', '${type}', ${idx}`)) {
-            updateBookmarkIcon(btn, subject, year, type, idx);
-        }
-    });
+    // Update all bookmark icons on page using data-bookmark-id
+    refreshAllBookmarkIcons();
 
     // If bookmarks page is open, re-render
     if (!document.getElementById('bookmarks-section').classList.contains('hidden')) {
@@ -1333,6 +1363,17 @@ function updateBookmarkIcon(btn, subject, year, type, idx) {
     if (svgPath) {
         svgPath.setAttribute('fill', isBookmarked ? 'currentColor' : 'none');
     }
+    btn.dataset.bookmarkId = id;
+}
+
+function refreshAllBookmarkIcons() {
+    document.querySelectorAll('.bookmark-btn[data-bookmark-id]').forEach(btn => {
+        const id = btn.dataset.bookmarkId;
+        const isBookmarked = bookmarks.some(b => b.id === id);
+        btn.classList.toggle('bookmarked', isBookmarked);
+        const svgPath = btn.querySelector('path');
+        if (svgPath) svgPath.setAttribute('fill', isBookmarked ? 'currentColor' : 'none');
+    });
 }
 
 function updateBookmarkBadge() {
@@ -1374,7 +1415,7 @@ function renderBookmarksList() {
         header.innerHTML = `
             <span class="q-num-badge" style="background:linear-gradient(135deg,#f59e0b,#fbbf24)">${b.subjectIcon}</span>
             <div class="flex-1 text-left">
-                <div class="text-xs text-gray-400 mb-1">${b.subjectName} · ${b.year} · ${b.type === 'mcq' ? 'MCQ' : 'লিখিত'}</div>
+                <div class="text-xs bm-meta mb-1">${b.subjectName} · ${b.year} · ${b.type === 'mcq' ? 'MCQ' : 'লিখিত'}</div>
                 <div>${formatQuestionText(b.q)}</div>
             </div>
             <div style="display:flex;align-items:center;gap:0.4rem">
@@ -1673,6 +1714,12 @@ const TOAST_ICONS = {
 
 function showToast(message, type = 'info') {
     const container = document.getElementById('toast-container');
+    // Max 3 toasts at a time — remove oldest if over limit
+    const existing = container.querySelectorAll('.toast:not(.out)');
+    if (existing.length >= 3) {
+        existing[0].classList.add('out');
+        setTimeout(() => existing[0].remove(), 300);
+    }
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     const icon = TOAST_ICONS[type] || TOAST_ICONS.info;
@@ -1680,10 +1727,11 @@ function showToast(message, type = 'info') {
     const cleanMsg = message.replace(/^[\u{1F000}-\u{1FFFF}\u{2600}-\u{27FF}\u{2700}-\u{27BF}\uFE0F✅❌⭐🎉📖⏸▶🗑✓]+\s*/u, '');
     toast.innerHTML = `${icon}<span>${cleanMsg || message}</span>`;
     container.appendChild(toast);
+    const duration = window.matchMedia('(pointer: coarse)').matches ? 2200 : 2800;
     setTimeout(() => {
         toast.classList.add('out');
-        setTimeout(() => toast.remove(), 300);
-    }, 2800);
+        setTimeout(() => toast.remove(), 280);
+    }, duration);
 }
 
 // --------------------------------------------------------------------------
@@ -1696,13 +1744,13 @@ const animObserver = new IntersectionObserver((entries, observer) => {
             observer.unobserve(entry.target);
         }
     });
-}, { threshold: 0.07 });
+}, { threshold: 0.04, rootMargin: '0px 0px -20px 0px' });
 
 function applyScrollAnimation(selector) {
     const els = typeof selector === 'string' ? document.querySelectorAll(selector) : [selector];
     els.forEach((el, i) => {
         el.classList.add('reveal-on-scroll');
-        el.style.transitionDelay = `${i * 0.04}s`;
+        el.style.transitionDelay = `${Math.min(i * 0.035, 0.2)}s`;
         animObserver.observe(el);
     });
 }
@@ -1998,24 +2046,23 @@ function initStudyTimer() {
         togglePillModeManual();
     }, { passive: false });
 
-    // ── IntersectionObserver: watch MCQ score wrap ──
-    const scoreWrap = document.getElementById('mcq-score-wrap');
-    const scoreObserver = new IntersectionObserver((entries) => {
+    // ── IntersectionObserver: watch MCQ score wrap — set up lazily ──
+    // We observe it when it becomes visible (MCQ mode activated), not at init
+    const scoreWrapObs = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             mcqScoreVisible = entry.isIntersecting;
             if (mcqActive) {
                 if (!mcqScoreVisible) {
-                    // Score scrolled out → show score in pill
                     switchPillMode('score');
                 } else {
-                    // Score back in view → show timer in pill
                     switchPillMode('timer');
                 }
             }
         });
     }, { threshold: 0.1 });
 
-    scoreObserver.observe(scoreWrap);
+    // Store observer reference for use when MCQ mode activates
+    window._scoreWrapObs = scoreWrapObs;
 }
 
 function switchPillMode(mode, skipAnim) {
@@ -2053,8 +2100,12 @@ function togglePillModeManual() {
 // Called when MCQ practice starts
 function activateMCQPillMode() {
     mcqActive = true;
-    // Initially, if score wrap is not visible, show score in pill
     const scoreWrap = document.getElementById('mcq-score-wrap');
+    if (scoreWrap && window._scoreWrapObs) {
+        window._scoreWrapObs.disconnect();
+        window._scoreWrapObs.observe(scoreWrap);
+    }
+    // Initially, if score wrap is not visible, show score in pill
     const rect = scoreWrap?.getBoundingClientRect();
     mcqScoreVisible = rect ? (rect.top >= 0 && rect.bottom <= window.innerHeight) : false;
     if (!mcqScoreVisible) {
@@ -2065,6 +2116,7 @@ function activateMCQPillMode() {
 // Called when leaving MCQ mode
 function deactivateMCQPillMode() {
     mcqActive = false;
+    window._scoreWrapObs?.disconnect();
     switchPillMode('timer', true);
 }
 
@@ -2111,7 +2163,10 @@ function initKeyboardShortcuts() {
     const closeBtn = document.getElementById('close-shortcut-panel');
     const helpBtn = document.getElementById('shortcut-help-btn');
 
-    if (helpBtn) helpBtn.onclick = () => panel.classList.add('open');
+    // মোবাইল/টাচ ডিভাইসে shortcut panel দরকার নেই
+    const isDesktop = () => window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+    if (helpBtn) helpBtn.onclick = () => { if (isDesktop()) panel.classList.add('open'); };
     if (closeBtn) closeBtn.onclick = () => panel.classList.remove('open');
     panel?.addEventListener('click', (e) => { if (e.target === panel) panel.classList.remove('open'); });
 
@@ -2124,7 +2179,7 @@ function initKeyboardShortcuts() {
 
         if (e.key === '?' || (e.key === '/' && !e.ctrlKey)) {
             e.preventDefault();
-            panel.classList.toggle('open');
+            if (isDesktop()) panel.classList.toggle('open');
         } else if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
             e.preventDefault();
             document.getElementById('global-search')?.focus();
@@ -2136,9 +2191,9 @@ function initKeyboardShortcuts() {
             document.getElementById('theme-toggle-track')?.click();
         } else if (e.key === 'f' || e.key === 'F') {
             document.getElementById('font-size-btn')?.click();
-        } else if (e.key === 'ArrowRight' || e.key === 'j') {
+        } else if (e.key === 'ArrowRight' || (e.key === 'j' && !e.ctrlKey && !e.metaKey)) {
             navigateQuestion(1);
-        } else if (e.key === 'ArrowLeft' || e.key === 'k') {
+        } else if (e.key === 'ArrowLeft' || (e.key === 'k' && !e.ctrlKey && !e.metaKey)) {
             navigateQuestion(-1);
         }
     });
@@ -2261,7 +2316,7 @@ function renderNotes() {
             <span class="q-num-badge">${idx + 1}</span>
             <div class="flex-1 text-left">
                 <div>${note.title}</div>
-                ${note.date ? `<div class="text-xs text-gray-400 mt-0.5">${note.date}</div>` : ''}
+                ${note.date ? `<div class="text-xs bm-meta mt-0.5">${note.date}</div>` : ''}
             </div>
             <div class="q-chevron">
                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
