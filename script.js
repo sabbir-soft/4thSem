@@ -1298,12 +1298,31 @@ function renderSyllabusContent(key, showTranslated = false) {
 
     // Wrap tables
     content.querySelectorAll('table').forEach(table => {
-        if (!table.parentNode.classList.contains('table-wrapper')) {
+        if (!table.parentNode.classList.contains('table-wrapper') && !table.parentNode.classList.contains('table-scroll-inner')) {
             const wrapper = document.createElement('div');
             wrapper.className = 'table-wrapper';
             table.parentNode.insertBefore(wrapper, table);
             wrapper.appendChild(table);
         }
+        const outer = table.closest('.table-wrapper');
+        if (outer && !outer.querySelector('.table-scroll-inner')) {
+            const inner = document.createElement('div');
+            inner.className = 'table-scroll-inner';
+            outer.insertBefore(inner, table);
+            inner.appendChild(table);
+        }
+        requestAnimationFrame(() => {
+            if (!outer) return;
+            const inner = outer.querySelector('.table-scroll-inner');
+            const scrollTarget = inner || outer;
+            const update = () => {
+                const has = scrollTarget.scrollWidth > scrollTarget.clientWidth;
+                outer.classList.toggle('has-overflow', has && scrollTarget.scrollLeft < scrollTarget.scrollWidth - scrollTarget.clientWidth - 2);
+                outer.classList.toggle('scrolled-right', scrollTarget.scrollLeft > 2);
+            };
+            update();
+            scrollTarget.addEventListener('scroll', update, { passive: true });
+        });
     });
 
     // Scroll into view after a brief moment
@@ -1565,18 +1584,36 @@ function formatQuestionText(text) {
 function sanitizeContent(element) {
     element.querySelectorAll('[style]').forEach(el => el.removeAttribute('style'));
     element.querySelectorAll('table').forEach(table => {
+        // Outer wrapper: shadow ও border-radius এখানে
         if (!table.parentNode.classList.contains('table-wrapper')) {
             const wrapper = document.createElement('div');
             wrapper.className = 'table-wrapper';
             table.parentNode.insertBefore(wrapper, table);
             wrapper.appendChild(table);
         }
-        // Add has-overflow class if table is wider than wrapper
+        // Inner scroll container — shadow নিরাপদ রাখার জন্য
+        const outer = table.parentNode;
+        if (outer && !outer.querySelector('.table-scroll-inner')) {
+            const inner = document.createElement('div');
+            inner.className = 'table-scroll-inner';
+            outer.insertBefore(inner, table);
+            inner.appendChild(table);
+        }
+
+        // has-overflow ও scrolled-right class manage করো
         requestAnimationFrame(() => {
-            const w = table.parentNode;
-            if (w && w.scrollWidth > w.clientWidth) {
-                w.classList.add('has-overflow');
-            }
+            const inner = outer.querySelector('.table-scroll-inner');
+            const scrollTarget = inner || outer;
+
+            const updateOverflowState = () => {
+                const hasOverflow = scrollTarget.scrollWidth > scrollTarget.clientWidth;
+                outer.classList.toggle('has-overflow', hasOverflow && scrollTarget.scrollLeft < scrollTarget.scrollWidth - scrollTarget.clientWidth - 2);
+                outer.classList.toggle('scrolled-right', scrollTarget.scrollLeft > 2);
+            };
+
+            updateOverflowState();
+            scrollTarget.addEventListener('scroll', updateOverflowState, { passive: true });
+            window.addEventListener('resize', updateOverflowState, { passive: true });
         });
     });
 }
