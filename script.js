@@ -557,6 +557,7 @@ function selectSubject(key) {
     if (prevSubject !== key) {
         currentState.year = null;
         currentState.type = null;
+        currentState.noteSubject = null; // class notes state রিসেট
     }
 
     // Handle class notes category
@@ -627,6 +628,10 @@ function renderFilters() {
     // Show regular filters, hide notes
     const classnoteFilters = document.getElementById('classnotes-filters');
     if (classnoteFilters) classnoteFilters.classList.add('hidden');
+
+    // Always restore regular filters wrap visibility (may have been hidden by class notes)
+    const regularFilters = document.getElementById('regular-filters-wrap');
+    if (regularFilters) regularFilters.style.display = '';
 
     const yearFilter = document.getElementById('year-filter');
     yearFilter.innerHTML = '';
