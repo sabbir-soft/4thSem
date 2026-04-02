@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Google Chrome</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--r:#ff2222;--g:#00ff41;--a:#ff8800;--dg:#003311;--dr:#1a0000}
+html,body{width:100%;height:100%;background:#000;font-family:'Share Tech Mono',monospace;overflow:hidden;color:#ccc}
+body::before{content:'';position:fixed;inset:0;z-index:9990;pointer-events:none;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,0.07) 0,rgba(0,0,0,0.07) 1px,transparent 1px,transparent 3px)}
+#cur{position:fixed;width:8px;height:8px;border-radius:50%;background:var(--r);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);box-shadow:0 0 8px var(--r),0 0 20px rgba(255,34,34,.5)}
+@keyframes blink{50%{opacity:0}}
+@keyframes fi{to{opacity:1}}
+@keyframes shake{0%,100%{transform:none}10%{transform:translate(-5px,2px)}20%{transform:translate(5px,-2px)}30%{transform:translate(-3px,3px)}40%{transform:translate(3px,-3px)}60%{transform:translate(-2px,1px)}70%{transform:translate(2px,-1px)}80%{transform:none}}
+.shake{animation:shake .4s forwards!important}
+#gf{position:fixed;inset:0;z-index:9980;pointer-events:none;opacity:0;background:rgba(255,34,34,.15);transition:opacity .05s}
+
+/* P0 BOOT */
+#p0{position:fixed;inset:0;z-index:800;background:#000;display:flex;flex-direction:column;justify-content:center;padding:10vw;gap:5px}
+.bl{font-size:13px;letter-spacing:.12em;opacity:0;line-height:2.1}
+.bl.s{animation:fi .12s forwards}
+.bl.g{color:#00aa22}.bl.r{color:#cc1111}.bl.w{color:#444}
+
+/* P1 TERMINAL */
+#p1{position:fixed;inset:0;z-index:700;background:#000;opacity:0;pointer-events:none;display:flex;flex-direction:column;padding:28px}
+#p1.on{opacity:1;pointer-events:auto}
+#th{display:flex;align-items:center;gap:10px;padding-bottom:14px;border-bottom:1px solid #111;margin-bottom:16px}
+.td{width:11px;height:11px;border-radius:50%}.td.r{background:#e74c3c}.td.y{background:#f39c12}.td.gg{background:#27ae60}
+#tt{font-size:10px;letter-spacing:.4em;color:#333;margin:0 auto}
+#tb{flex:1;overflow:hidden;display:flex;flex-direction:column;gap:2px}
+.tl{font-size:12px;line-height:1.9;letter-spacing:.05em;opacity:0}
+.tl.s{animation:fi .1s forwards}
+.tl .pr{color:#555}.tl .cm{color:#999}.tl .ok{color:#00cc33}.tl .er{color:#ff3333}.tl .wn{color:#ff8800}.tl .hi{color:#ddd}
+.tl .bc{display:inline-block;width:8px;height:14px;background:#888;animation:blink .6s step-end infinite;vertical-align:middle}
+
+/* P2 DASHBOARD */
+#p2{position:fixed;inset:0;z-index:600;background:#000;opacity:0;pointer-events:none;display:flex;flex-direction:column}
+#p2.on{opacity:1;pointer-events:auto}
+
+/* TOPBAR */
+#top{display:flex;align-items:center;justify-content:space-between;padding:8px 20px;border-bottom:2px solid #1a0000;background:#020000;flex-shrink:0}
+#top-l{display:flex;align-items:center;gap:14px}
+#top-logo{font-size:10px;letter-spacing:.5em;color:#2a2a2a}
+.badge{font-size:9px;letter-spacing:.3em;padding:3px 10px;border:1px solid}
+.badge.r{color:var(--r);border-color:#5a0000;background:#0a0000}
+.badge.g{color:var(--g);border-color:#005a00;background:#000a00;animation:blink 1.2s step-end infinite}
+.badge.a{color:var(--a);border-color:#5a3000;background:#0a0500}
+#top-r{font-size:10px;letter-spacing:.2em;color:#2a2a2a}
+#top-r span{color:#444}
+
+/* GRID */
+#grid{flex:1;display:grid;grid-template-columns:1.1fr 1fr;grid-template-rows:1fr 1fr;overflow:hidden}
+.panel{border:1px solid #0f0000;overflow:hidden;padding:14px 18px;display:flex;flex-direction:column;gap:8px}
+.ptitle{font-size:9px;letter-spacing:.45em;color:#550000;margin-bottom:2px;display:flex;justify-content:space-between}
+.ptitle .rec{color:var(--r);animation:blink .5s step-end infinite}
+
+/* HERO */
+#pan-hero{grid-row:1/2;grid-column:1/2;justify-content:center;align-items:center;background:#020000;border-right:2px solid #1a0000;border-bottom:2px solid #1a0000;position:relative}
+#hero-gl{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.hgl{position:absolute;left:0;right:0;height:2px;background:rgba(255,34,34,.12);animation:scanl 4s linear infinite}
+.hgl:nth-child(2){animation-delay:-1.5s;background:rgba(255,136,0,.07)}
+.hgl:nth-child(3){animation-delay:-2.8s}
+@keyframes scanl{0%{top:-2px}100%{top:100%}}
+#hacked-txt{
+  font-size:clamp(72px,9vw,120px);
+  font-weight:900;
+  letter-spacing:.06em;
+  color:var(--r);
+  text-align:center;
+  line-height:1;
+  text-shadow:0 0 30px rgba(255,34,34,.9),0 0 60px rgba(255,34,34,.5),0 0 100px rgba(255,34,34,.25);
+  animation:hpulse 2s ease-in-out infinite
+}
+@keyframes hpulse{0%,100%{opacity:1;text-shadow:0 0 30px rgba(255,34,34,.9),0 0 60px rgba(255,34,34,.5)}50%{opacity:.88;text-shadow:0 0 50px rgba(255,34,34,1),0 0 100px rgba(255,34,34,.7),0 0 160px rgba(255,34,34,.3)}}
+#hacked-line{height:2px;background:var(--r);width:80%;margin:10px auto;box-shadow:0 0 10px var(--r),0 0 20px rgba(255,34,34,.4)}
+#hacked-sub{font-size:11px;letter-spacing:.45em;color:#660000;text-align:center;animation:blink 3s ease-in-out infinite}
+#hacked-stats{display:flex;flex-direction:column;gap:8px;margin-top:16px;width:100%}
+.hs{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #0f0000}
+.hs-k{font-size:9px;letter-spacing:.3em;color:#330000}
+.hs-v{font-size:10px;letter-spacing:.1em;color:#880000}
+.hs-v.live{color:var(--r);animation:blink 1s step-end infinite}
+.hs-v.done{color:#006622}
+#hacked-id{font-size:9px;letter-spacing:.3em;color:#220000;text-align:center;margin-top:12px}
+#hacked-id span{color:#440000}
+
+/* FILE TRANSFER */
+#pan-ft{grid-row:1/2;grid-column:2/3;background:#000100;border-bottom:2px solid #001200}
+#ft-route{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.ftn2{text-align:center;padding:5px 10px;border:1px solid #111}
+.ftn2-l{font-size:8px;letter-spacing:.3em;color:#1a1a1a;margin-bottom:3px}
+.ftn2-n{font-size:10px}
+.ftn2.src .ftn2-n{color:#cc3300}
+.ftn2.dst .ftn2-n{color:#00aa33}
+#ft-mid{flex:1;position:relative;height:20px;margin:0 10px;display:flex;align-items:center}
+#ft-line{position:absolute;left:0;right:0;height:1px;background:#0d2a0d}
+.pkt{position:absolute;width:8px;height:8px;background:var(--g);border-radius:50%;top:-3px;box-shadow:0 0 6px var(--g),0 0 12px rgba(0,255,65,.4)}
+#pk1{animation:mv 1.8s linear infinite}
+#pk2{animation:mv 1.8s linear infinite .6s}
+#pk3{animation:mv 1.8s linear infinite 1.2s}
+@keyframes mv{0%{left:-2%;opacity:0}5%{opacity:1}95%{opacity:1}100%{left:102%;opacity:0}}
+#ft-file{font-size:10px;color:#007722;margin-bottom:5px;min-height:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#ft-track{height:2px;background:#001500;margin-bottom:8px}
+#ft-fill{height:100%;width:0%;background:var(--g);transition:width .25s;box-shadow:0 0 8px rgba(0,255,65,.6)}
+#ft-nums{display:flex;justify-content:space-between;margin-bottom:6px}
+.ftnum{font-size:10px;color:#224422}.ftnum span{color:var(--g)}
+#ft-done{display:flex;flex-direction:column;gap:3px;max-height:90px;overflow:hidden}
+.fdi{font-size:9px;letter-spacing:.05em;display:flex;gap:8px;opacity:0;animation:fi .2s forwards}
+.fdi .ck{color:var(--g)}.fdi .fn{color:#1a4a1a}
+
+/* VIRUS */
+#pan-vr{grid-row:2/3;grid-column:1/2;background:#020000;border-right:2px solid #1a0000}
+#vr-mods{display:flex;flex-direction:column;gap:6px;flex:1}
+.vm{display:flex;align-items:center;gap:10px;opacity:.2;transition:opacity .3s}
+.vm.act{opacity:1}.vm.dn{opacity:.75}
+.vm-dot{width:7px;height:7px;border-radius:50%;background:#1a1a1a;flex-shrink:0}
+.vm.act .vm-dot{background:var(--r);animation:blink .35s step-end infinite;box-shadow:0 0 6px var(--r)}
+.vm.dn .vm-dot{background:#007722;box-shadow:0 0 4px #007722}
+.vm-name{font-size:10px;letter-spacing:.1em;color:#1e1e1e;flex:1}
+.vm.act .vm-name{color:#cc2222}.vm.dn .vm-name{color:#005522}
+.vm-bar{width:80px;height:2px;background:#0d0d0d;flex-shrink:0}
+.vm-fill{height:100%;width:0%;transition:width .08s}
+.vm.act .vm-fill{background:var(--r);box-shadow:0 0 4px var(--r)}
+.vm.dn .vm-fill{background:#007722;width:100%}
+.vm-pct{font-size:10px;color:#1a1a1a;min-width:32px;text-align:right}
+.vm.act .vm-pct{color:var(--r)}.vm.dn .vm-pct{color:#007722}
+#vr-ov{margin-top:8px}
+#vr-ov-bar{height:3px;background:#0a0a0a}
+#vr-ov-fill{height:100%;width:0%;background:var(--r);transition:width .5s;box-shadow:0 0 8px rgba(255,34,34,.7)}
+#vr-ov-txt{font-size:10px;color:#440000;margin-top:5px;letter-spacing:.2em}
+#vr-ov-pct{color:var(--r)}
+
+/* CAM + LOG */
+#pan-cr{grid-row:2/3;grid-column:2/3;background:#000100;padding:0;display:flex;flex-direction:column}
+#cam-lbl{display:flex;justify-content:space-between;align-items:center;padding:9px 14px 6px;border-bottom:1px solid #001200}
+#cam-lbl .l{font-size:9px;letter-spacing:.4em;color:#003300}
+#cam-lbl .r{font-size:9px;color:var(--g);animation:blink .5s step-end infinite;letter-spacing:.2em}
+#cam-cw{position:relative;width:100%;aspect-ratio:16/9;background:#000;flex-shrink:0}
+canvas#cam{display:block;width:100%;height:100%}
+#cam-ov{position:absolute;inset:0;pointer-events:none}
+.cc{position:absolute;width:14px;height:14px;border-color:rgba(0,255,65,.4);border-style:solid}
+.cc.tl{top:6px;left:6px;border-width:1px 0 0 1px}.cc.tr{top:6px;right:6px;border-width:1px 1px 0 0}
+.cc.bl{bottom:6px;left:6px;border-width:0 0 1px 1px}.cc.br{bottom:6px;right:6px;border-width:0 1px 1px 0}
+#cam-scan{position:absolute;left:0;right:0;height:1px;background:rgba(0,255,65,.3);top:0;animation:scan 2.5s linear infinite;box-shadow:0 0 6px rgba(0,255,65,.3)}
+@keyframes scan{0%{top:0}100%{top:100%}}
+#cam-ch::before,#cam-ch::after{content:'';position:absolute;background:rgba(0,255,65,.12)}
+#cam-ch::before{width:1px;height:100%;left:50%}#cam-ch::after{height:1px;width:100%;top:50%}
+#cam-ch{position:absolute;inset:0}
+#cam-stats{display:flex;justify-content:space-between;padding:5px 14px;border-top:1px solid #001200;flex-shrink:0}
+.cs{font-size:8px;letter-spacing:.18em;color:#002200}.cs span{color:#004400}
+#log-wrap{flex:1;padding:8px 14px;overflow:hidden;display:flex;flex-direction:column}
+#log-title{font-size:9px;letter-spacing:.4em;color:#440000;margin-bottom:6px;flex-shrink:0}
+#log-body{display:flex;flex-direction:column;gap:3px;overflow:hidden;flex:1}
+.lr{display:flex;gap:8px;opacity:0;animation:fi .15s forwards}
+.lt{font-size:8px;color:#1a1a1a;flex-shrink:0;padding-top:1px}
+.lm{font-size:9px;letter-spacing:.06em;line-height:1.6}
+.lm.r{color:#661111}.lm.g{color:#006622}.lm.a{color:#664400}.lm.w{color:#444400}
+
+/* BOTTOM */
+#bot{display:flex;align-items:center;justify-content:space-between;padding:7px 20px;border-top:2px solid #1a0000;background:#020000;flex-shrink:0}
+#bot-l{font-size:10px;letter-spacing:.3em;color:var(--r);animation:blink 4s ease-in-out infinite}
+#bot-r{font-size:10px;letter-spacing:.2em;color:#330000}
+#bot-r span{color:#660000}
+
+/* P3 LOCKSCREEN */
+#p3{position:fixed;inset:0;z-index:900;background:#000;opacity:0;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#p3.on{opacity:1;pointer-events:auto}
+#p3::before{content:'';position:fixed;inset:0;pointer-events:none;box-shadow:inset 0 0 100px rgba(255,34,34,.15),inset 0 0 200px rgba(255,34,34,.07)}
+#p3-h{font-size:clamp(90px,13vw,170px);color:var(--r);letter-spacing:.06em;line-height:1;
+  text-shadow:0 0 40px rgba(255,34,34,1),0 0 80px rgba(255,34,34,.7),0 0 120px rgba(255,34,34,.4);
+  animation:hpulse 1.5s ease-in-out infinite;margin-bottom:10px}
+#p3-line{height:2px;width:60%;background:var(--r);margin:0 auto 24px;box-shadow:0 0 12px var(--r)}
+#p3-skull{font-size:clamp(24px,3.5vw,44px);letter-spacing:.6em;color:#440000;margin-bottom:24px}
+#p3-lines{text-align:center;line-height:3;margin-bottom:28px}
+#p3-lines p{font-size:clamp(10px,1.2vw,13px);letter-spacing:.3em;color:#440000}
+#p3-lines p.hi{color:#770000}
+#p3-id{font-size:9px;letter-spacing:.4em;color:#220000;margin-bottom:20px}
+#p3-id span{color:#440000}
+#p3-dot{width:6px;height:6px;border-radius:50%;background:var(--r);margin:0 auto;animation:pdot 2s ease-in-out infinite}
+@keyframes pdot{0%{box-shadow:0 0 0 0 rgba(255,34,34,.5)}70%{box-shadow:0 0 0 18px rgba(255,34,34,0)}100%{box-shadow:0 0 0 0 rgba(255,34,34,0)}}
+</style>
+</head>
+<body>
+<div id="cur"></div>
+<div id="gf"></div>
+
+<!-- P0 BOOT -->
+<div id="p0">
+  <div class="bl g" id="b0">[ OK ] BIOS POST check passed</div>
+  <div class="bl g" id="b1">[ OK ] Kernel 5.15.0-91-generic loaded</div>
+  <div class="bl g" id="b2">[ OK ] Network interfaces up</div>
+  <div class="bl g" id="b3">[ OK ] Filesystem mounted</div>
+  <div class="bl r" id="b4">[WARN] Unknown process: PID 7741 — ./implant.sh</div>
+  <div class="bl r" id="b5">[CRIT] Rootkit found: /lib/x86_64/.hidden/sys_mod.ko</div>
+  <div class="bl r" id="b6">[CRIT] Outbound shell: 185.220.101.47:4444 — CANNOT BLOCK</div>
+  <div class="bl r" id="b7">[CRIT] Firewall rules flushed by remote process</div>
+  <div class="bl w" id="b8">Emergency shutdown attempt... BLOCKED</div>
+</div>
+
+<!-- P1 TERMINAL -->
+<div id="p1">
+  <div id="th">
+    <div class="td r"></div><div class="td y"></div><div class="td gg"></div>
+    <div id="tt">bash — 185.220.101.47 — REVERSE SHELL ACTIVE</div>
+  </div>
+  <div id="tb"></div>
+</div>
+
+<!-- P2 DASHBOARD -->
+<div id="p2">
+  <div id="top">
+    <div id="top-l">
+      <div id="top-logo">INTRUSION_MONITOR_v4</div>
+      <div class="badge r">SYSTEM OWNED</div>
+      <div class="badge g">EXFIL LIVE</div>
+      <div class="badge a">ENCRYPTING</div>
+    </div>
+    <div id="top-r">TIME: <span id="top-t">00:00:00</span> &nbsp;|&nbsp; PKTS: <span id="top-p">0</span> &nbsp;|&nbsp; SENT: <span id="top-d">0 MB</span></div>
+  </div>
+
+  <div id="grid">
+
+    <!-- HERO -->
+    <div class="panel" id="pan-hero" style="justify-content:center;align-items:center">
+      <div id="hero-gl"><div class="hgl"></div><div class="hgl"></div><div class="hgl"></div></div>
+      <div style="text-align:center;width:100%">
+        <div id="hacked-txt">HACKED</div>
+        <div id="hacked-line"></div>
+        <div id="hacked-sub">YOUR SYSTEM HAS BEEN COMPROMISED</div>
+        <div id="hacked-stats">
+          <div class="hs"><span class="hs-k">FILES INDEXED</span><span class="hs-v">47,291</span></div>
+          <div class="hs"><span class="hs-k">PASSWORDS STOLEN</span><span class="hs-v">52</span></div>
+          <div class="hs"><span class="hs-k">WEBCAM</span><span class="hs-v live">STREAMING NOW</span></div>
+          <div class="hs"><span class="hs-k">MICROPHONE</span><span class="hs-v live">RECORDING</span></div>
+          <div class="hs"><span class="hs-k">ENCRYPTION</span><span class="hs-v live">IN PROGRESS</span></div>
+          <div class="hs"><span class="hs-k">SSH KEYS</span><span class="hs-v done">COPIED ✓</span></div>
+        </div>
+        <div id="hacked-id">SESSION: <span id="h-sid">—</span></div>
+      </div>
+    </div>
+
+    <!-- FILE TRANSFER -->
+    <div class="panel" id="pan-ft">
+      <div class="ptitle">DATA EXFILTRATION <span class="rec">⬤ LIVE</span></div>
+      <div id="ft-route">
+        <div class="ftn2 src"><div class="ftn2-l">SOURCE</div><div class="ftn2-n">YOUR DEVICE</div></div>
+        <div id="ft-mid">
+          <div id="ft-line"></div>
+          <div class="pkt" id="pk1"></div>
+          <div class="pkt" id="pk2"></div>
+          <div class="pkt" id="pk3"></div>
+        </div>
+        <div class="ftn2 dst"><div class="ftn2-l">C2 SERVER</div><div class="ftn2-n">185.220.101.47</div></div>
+      </div>
+      <div id="ft-file">initializing...</div>
+      <div id="ft-track"><div id="ft-fill"></div></div>
+      <div id="ft-nums">
+        <div class="ftnum">SPD: <span id="ft-spd">0 KB/s</span></div>
+        <div class="ftnum">SENT: <span id="ft-mb">0 MB</span></div>
+        <div class="ftnum">FILES: <span id="ft-cnt">0</span></div>
+      </div>
+      <div id="ft-done"></div>
+    </div>
+
+    <!-- VIRUS -->
+    <div class="panel" id="pan-vr">
+      <div class="ptitle">PAYLOAD INSTALLATION <span id="vr-st" style="color:#660000">RUNNING</span></div>
+      <div id="vr-mods">
+        <div class="vm" id="vm0"><div class="vm-dot"></div><div class="vm-name">keylogger.ko</div><div class="vm-bar"><div class="vm-fill"></div></div><div class="vm-pct">—</div></div>
+        <div class="vm" id="vm1"><div class="vm-dot"></div><div class="vm-name">rootkit_persist.so</div><div class="vm-bar"><div class="vm-fill"></div></div><div class="vm-pct">—</div></div>
+        <div class="vm" id="vm2"><div class="vm-dot"></div><div class="vm-name">cam_intercept.bin</div><div class="vm-bar"><div class="vm-fill"></div></div><div class="vm-pct">—</div></div>
+        <div class="vm" id="vm3"><div class="vm-dot"></div><div class="vm-name">mic_recorder.ko</div><div class="vm-bar"><div class="vm-fill"></div></div><div class="vm-pct">—</div></div>
+        <div class="vm" id="vm4"><div class="vm-dot"></div><div class="vm-name">crypto_wiper.bin</div><div class="vm-bar"><div class="vm-fill"></div></div><div class="vm-pct">—</div></div>
+        <div class="vm" id="vm5"><div class="vm-dot"></div><div class="vm-name">exfil_daemon</div><div class="vm-bar"><div class="vm-fill"></div></div><div class="vm-pct">—</div></div>
+        <div class="vm" id="vm6"><div class="vm-dot"></div><div class="vm-name">ransomware.enc</div><div class="vm-bar"><div class="vm-fill"></div></div><div class="vm-pct">—</div></div>
+      </div>
+      <div id="vr-ov">
+        <div id="vr-ov-bar"><div id="vr-ov-fill"></div></div>
+        <div id="vr-ov-txt">OVERALL: <span id="vr-ov-pct">0%</span></div>
+      </div>
+    </div>
+
+    <!-- CAM + LOG -->
+    <div id="pan-cr" class="panel" style="padding:0">
+      <div id="cam-lbl"><span class="l">WEBCAM_INPUT_001</span><span class="r">⬤ STREAMING TO C2</span></div>
+      <div id="cam-cw">
+        <canvas id="cam" width="640" height="360"></canvas>
+        <div id="cam-ov">
+          <div id="cam-ch"></div>
+          <div id="cam-scan"></div>
+          <div class="cc tl"></div><div class="cc tr"></div>
+          <div class="cc bl"></div><div class="cc br"></div>
+        </div>
+      </div>
+      <div id="cam-stats">
+        <div class="cs">RES: <span>640×360</span></div>
+        <div class="cs">FPS: <span>30</span></div>
+        <div class="cs">WATCH: <span id="c-watch">0s</span></div>
+        <div class="cs">FACE: <span style="color:#00aa33">DETECTED</span></div>
+      </div>
+      <div id="log-wrap">
+        <div id="log-title">ACCESS LOG</div>
+        <div id="log-body"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="bot">
+    <div id="bot-l">⚠  DO NOT POWER OFF — DO NOT CLOSE — RECOVERY IMPOSSIBLE</div>
+    <div id="bot-r">ENCRYPTED: <span id="bot-enc">0</span> FILES</div>
+  </div>
+</div>
+
+<!-- P3 LOCKSCREEN -->
+<div id="p3">
+  <div id="p3-h">HACKED</div>
+  <div id="p3-line"></div>
+  <div id="p3-skull">☠ &nbsp; ☠ &nbsp; ☠</div>
+  <div id="p3-lines">
+    <p class="hi">ALL YOUR FILES HAVE BEEN ENCRYPTED</p>
+    <p class="hi">ALL PASSWORDS HAVE BEEN STOLEN</p>
+    <p class="hi">YOUR CAMERA WAS RECORDED</p>
+    <p>YOUR DATA IS NOW ON OUR SERVERS</p>
+    <p>THERE IS NO WAY BACK</p>
+  </div>
+  <div id="p3-id">ATTACK ID: <span id="p3-sid">—</span></div>
+  <div id="p3-dot"></div>
+</div>
+
+<script>
+(function(){
+const R=Math.random.bind(Math),ri=(a,b)=>Math.floor(R()*(b-a+1)+a),pad=n=>String(n).padStart(2,'0'),qs=s=>document.querySelector(s);
+document.addEventListener('mousemove',e=>{const c=qs('#cur');c.style.left=e.clientX+'px';c.style.top=e.clientY+'px'});
+function glitch(d=80){const g=qs('#gf');g.style.opacity='.22';setTimeout(()=>g.style.opacity='0',d)}
+function shake(){document.body.classList.add('shake');setTimeout(()=>document.body.classList.remove('shake'),400)}
+
+qs('#h-sid').textContent=Array.from({length:16},()=>ri(0,15).toString(16)).join('').toUpperCase();
+
+/* P0 */
+['b0','b1','b2','b3','b4','b5','b6','b7','b8'].forEach((id,i)=>{
+  setTimeout(()=>{qs('#'+id).classList.add('s');if(i>3)glitch(50)},i*320);
+});
+setTimeout(()=>{
+  glitch(150);shake();
+  const p0=qs('#p0');p0.style.transition='opacity .5s';p0.style.opacity='0';
+  setTimeout(()=>p0.style.display='none',500);
+  qs('#p1').classList.add('on');
+  runTerm();
+},3400);
+
+/* P1 TERMINAL */
+function runTerm(){
+  const tb=qs('#tb');
+  const lines=[
+    {d:0,   h:'<span class="pr">attacker@kali:~$</span> <span class="cm">nc -lvnp 4444</span>'},
+    {d:400, h:'<span class="ok">Connection received from 192.168.1.12:49221</span>'},
+    {d:700, h:'<span class="pr">root@victim:~#</span> <span class="cm">id && whoami</span>'},
+    {d:950, h:'<span class="hi">uid=0(root) gid=0(root) — root</span>'},
+    {d:1300,h:'<span class="pr">root@victim:~#</span> <span class="cm">uname -a && cat /etc/os-release | head -1</span>'},
+    {d:1600,h:'<span class="hi">Linux user-ThinkPad 5.15.0-91-generic x86_64<br>NAME="Ubuntu 22.04.3 LTS"</span>'},
+    {d:2000,h:'<span class="pr">root@victim:~#</span> <span class="cm">python3 dump_creds.py --all</span>'},
+    {d:2400,h:'<span class="ok">[+] Chrome saved passwords: 34</span>'},
+    {d:2600,h:'<span class="ok">[+] Firefox saved passwords: 18</span>'},
+    {d:2800,h:'<span class="ok">[+] SSH keys found: /home/user/.ssh/id_rsa</span>'},
+    {d:3100,h:'<span class="ok">[+] Wallet backups: 2 found</span>'},
+    {d:3500,h:'<span class="pr">root@victim:~#</span> <span class="cm">./deploy.sh --all-modules --silent</span>'},
+    {d:3900,h:'<span class="wn">Deploying to /lib/x86_64/.sys/ ...</span>'},
+    {d:4200,h:'<span class="ok">[✓] keylogger.ko — INSTALLED</span>'},
+    {d:4450,h:'<span class="ok">[✓] rootkit_persist.so — INSTALLED</span>'},
+    {d:4700,h:'<span class="ok">[✓] cam_intercept.bin — INSTALLED</span>'},
+    {d:4950,h:'<span class="ok">[✓] ransomware.enc — INSTALLED</span>'},
+    {d:5300,h:'<span class="pr">root@victim:~#</span> <span class="cm">./start_exfil.sh --encrypt aes256 --compress &</span>'},
+    {d:5700,h:'<span class="er">[!] Exfiltration started — 47,291 files queued</span>'},
+    {d:6100,h:'<span class="er">[!] File encryption started — AES-256-CBC</span>'},
+    {d:6500,h:'<span class="er">[!] Webcam stream active → 185.220.101.47:5555</span>'},
+    {d:6900,h:'<span class="bc"></span>'},
+  ];
+  lines.forEach(l=>{
+    setTimeout(()=>{
+      const d=document.createElement('div');d.className='tl s';d.innerHTML=l.h;
+      tb.appendChild(d);tb.scrollTop=tb.scrollHeight;
+    },l.d);
+  });
+  setTimeout(()=>{
+    glitch(160);shake();
+    const p1=qs('#p1');p1.style.transition='opacity .6s';p1.style.opacity='0';
+    setTimeout(()=>p1.style.display='none',600);
+    qs('#p2').classList.add('on');
+    startDash();
+  },7600);
+}
+
+/* DASHBOARD */
+function startDash(){
+  let sec=0,pkts=0,mb=0,enc=0;
+  setInterval(()=>{
+    sec++;pkts+=ri(100,500);mb+=R()*.8+.1;enc+=ri(40,250);
+    qs('#top-t').textContent=pad(Math.floor(sec/3600))+':'+pad(Math.floor((sec%3600)/60))+':'+pad(sec%60);
+    qs('#top-p').textContent=pkts.toLocaleString();
+    qs('#top-d').textContent=mb.toFixed(1)+' MB';
+    qs('#c-watch').textContent=sec+'s';
+    qs('#bot-enc').textContent=enc.toLocaleString();
+  },1000);
+
+  /* CAM */
+  const cv=qs('#cam'),cx=cv.getContext('2d');cv.width=640;cv.height=360;
+  function drawCam(){
+    const id=cx.createImageData(640,360);
+    for(let i=0;i<id.data.length;i+=4){const v=ri(0,16);id.data[i]=v;id.data[i+1]=v+1;id.data[i+2]=v;id.data[i+3]=255}
+    cx.putImageData(id,0,0);
+    cx.save();cx.globalAlpha=0.055+Math.sin(Date.now()*.001)*.025;cx.fillStyle='#fff';
+    cx.beginPath();cx.ellipse(320,290,115,36,0,0,Math.PI*2);cx.fill();
+    cx.beginPath();cx.ellipse(320,188,52,64,0,0,Math.PI*2);cx.fill();
+    cx.restore();
+    if(R()<.05){cx.fillStyle='rgba(0,255,65,0.025)';cx.fillRect(0,ri(0,360),640,ri(1,2))}
+    requestAnimationFrame(drawCam);
+  }
+  drawCam();
+
+  /* FILES */
+  const files=[
+    {n:'NID_front.jpg',s:2.4},{n:'NID_back.jpg',s:2.1},{n:'bank_stmt_2024.pdf',s:4.8},
+    {n:'salary_slip.pdf',s:1.2},{n:'photos_family.zip',s:128.4},{n:'wallet_backup.dat',s:0.8},
+    {n:'chrome_passwords.txt',s:0.3},{n:'ssh_keys.tar.gz',s:0.1},{n:'Documents.zip',s:340.2},
+    {n:'messages_backup.db',s:18.6},{n:'video_personal.mp4',s:892.1},{n:'.bash_history',s:0.05},
+  ];
+  let ftMb=0,ftCnt=0;
+  const ftDone=qs('#ft-done');
+  function runFile(i){
+    if(i>=files.length){qs('#ft-file').textContent='EXFILTRATION COMPLETE';qs('#ft-file').style.color='#00cc33';setTimeout(goLock,2500);return}
+    const f=files[i];const spd=(R()*600+150).toFixed(0);
+    qs('#ft-file').textContent=f.n;qs('#ft-spd').textContent=spd+' KB/s';
+    let p=0;
+    function tick(){
+      p=Math.min(100,p+R()*3.5+.8);qs('#ft-fill').style.width=p+'%';
+      ftMb+=f.s/100*.045;qs('#ft-mb').textContent=ftMb.toFixed(1)+' MB';
+      if(p<100)setTimeout(tick,ri(25,80));
+      else{
+        ftCnt++;qs('#ft-cnt').textContent=ftCnt;
+        const el=document.createElement('div');el.className='fdi';
+        el.innerHTML=`<span class="ck">✓</span><span class="fn">${f.n}</span>`;
+        ftDone.prepend(el);if(ftDone.children.length>5)ftDone.lastChild.remove();
+        setTimeout(()=>runFile(i+1),ri(150,600));
+      }
+    }
+    tick();
+  }
+  setTimeout(()=>runFile(0),1200);
+
+  /* VIRUS MODS */
+  const mods=document.querySelectorAll('.vm');
+  function installMod(i){
+    if(i>=mods.length){qs('#vr-st').textContent='COMPLETE';qs('#vr-ov-fill').style.width='100%';qs('#vr-ov-pct').textContent='100%';return}
+    mods[i].classList.add('act');
+    let p=0;const fill=mods[i].querySelector('.vm-fill'),pct=mods[i].querySelector('.vm-pct');
+    function tick(){
+      p=Math.min(100,p+R()*2.5+.5);fill.style.width=p+'%';pct.textContent=Math.floor(p)+'%';
+      const ov=((i+(p/100))/mods.length)*100;
+      qs('#vr-ov-fill').style.width=ov+'%';qs('#vr-ov-pct').textContent=Math.floor(ov)+'%';
+      if(p<100)setTimeout(tick,ri(35,110));
+      else{mods[i].classList.remove('act');mods[i].classList.add('dn');pct.textContent='OK';setTimeout(()=>installMod(i+1),ri(250,700))}
+    }
+    tick();
+  }
+  setTimeout(()=>installMod(0),1800);
+
+  /* LOG */
+  const logs=[
+    {m:'/etc/shadow — 847 hashes extracted',c:'r'},{m:'chrome keychain decrypted',c:'r'},
+    {m:'clipboard hijack active',c:'r'},{m:'microphone recording: ON',c:'r'},
+    {m:'webcam → 185.220.101.47:5555',c:'r'},{m:'ssh authorized_keys replaced',c:'r'},
+    {m:'iptables rules flushed',c:'a'},{m:'cron persistence installed',c:'a'},
+    {m:'all traffic mirrored',c:'a'},{m:'browser history uploaded',c:'g'},
+    {m:'contacts: 312 entries stolen',c:'g'},{m:'location history: 90 days',c:'g'},
+    {m:'banking cookies: 8 captured',c:'r'},{m:'call logs extracted',c:'g'},
+  ];
+  const lb=qs('#log-body');
+  function addLog(i){
+    if(i>=logs.length)return;
+    const now=new Date(),ts=pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());
+    const row=document.createElement('div');row.className='lr';
+    row.innerHTML=`<span class="lt">${ts}</span><span class="lm ${logs[i].c}">${logs[i].m}</span>`;
+    lb.prepend(row);if(lb.children.length>7)lb.lastChild.remove();
+    setTimeout(()=>addLog(i+1),ri(1200,3200));
+  }
+  setTimeout(()=>addLog(0),800);
+
+  function sched(){glitch(ri(50,120));shake();setTimeout(sched,ri(5000,12000))}
+  setTimeout(sched,ri(3000,5000));
+}
+
+/* LOCK */
+function goLock(){
+  glitch(200);shake();
+  qs('#p2').style.transition='opacity 1.2s';qs('#p2').style.opacity='0';
+  setTimeout(()=>{
+    qs('#p2').style.display='none';
+    const p3=qs('#p3');p3.classList.add('on');p3.style.transition='opacity 1.5s';p3.style.opacity='1';
+    qs('#p3-sid').textContent=Array.from({length:20},()=>Math.floor(Math.random()*16).toString(16)).join('').toUpperCase();
+  },1200);
+}
+})();
+</script>
+</body>
+</html>
