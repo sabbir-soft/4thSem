@@ -2,220 +2,352 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Google Chrome</title>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--r:#ff2222;--g:#00ff41;--a:#ff8800;--dg:#003311;--dr:#1a0000}
-html,body{width:100%;height:100%;background:#000;font-family:'Share Tech Mono',monospace;overflow:hidden;color:#ccc}
+:root{
+  --r:#ff1111;--g:#00ff41;--a:#ff8800;--b:#00aaff;
+  --dg:#003311;--dr:#1a0000;
+  --r2:rgba(255,17,17,.15);--g2:rgba(0,255,65,.15);
+}
+html,body{width:100%;height:100%;background:#000;font-family:'Share Tech Mono',monospace;overflow:hidden;color:#ccc;touch-action:none}
+
+/* SCANLINE OVERLAY */
 body::before{content:'';position:fixed;inset:0;z-index:9990;pointer-events:none;
-  background:repeating-linear-gradient(0deg,rgba(0,0,0,0.07) 0,rgba(0,0,0,0.07) 1px,transparent 1px,transparent 3px)}
-#cur{position:fixed;width:8px;height:8px;border-radius:50%;background:var(--r);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);box-shadow:0 0 8px var(--r),0 0 20px rgba(255,34,34,.5)}
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,0.09) 0,rgba(0,0,0,0.09) 1px,transparent 1px,transparent 3px)}
+body::after{content:'';position:fixed;inset:0;z-index:9989;pointer-events:none;
+  background:radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,.7) 100%)}
+
+/* CUSTOM CURSOR */
+#cur{position:fixed;width:12px;height:12px;border-radius:50%;background:var(--r);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);
+  box-shadow:0 0 10px var(--r),0 0 30px rgba(255,17,17,.6),0 0 60px rgba(255,17,17,.2)}
+
+/* GLOBAL RED FLASH */
+#gf{position:fixed;inset:0;z-index:9980;pointer-events:none;opacity:0;background:rgba(255,17,17,.18);transition:opacity .05s}
+
+/* GLOBAL GLITCH BARS */
+#glitch-bars{position:fixed;inset:0;z-index:9970;pointer-events:none;overflow:hidden}
+.gb{position:absolute;left:0;right:0;height:0;background:rgba(255,17,17,.07);opacity:0}
+
 @keyframes blink{50%{opacity:0}}
-@keyframes fi{to{opacity:1}}
-@keyframes shake{0%,100%{transform:none}10%{transform:translate(-5px,2px)}20%{transform:translate(5px,-2px)}30%{transform:translate(-3px,3px)}40%{transform:translate(3px,-3px)}60%{transform:translate(-2px,1px)}70%{transform:translate(2px,-1px)}80%{transform:none}}
+@keyframes fi{from{opacity:0}to{opacity:1}}
+@keyframes shake{0%,100%{transform:none}10%{transform:translate(-6px,3px) skewX(-1deg)}20%{transform:translate(6px,-3px) skewX(1deg)}30%{transform:translate(-4px,4px)}40%{transform:translate(4px,-4px)}60%{transform:translate(-3px,2px)}70%{transform:translate(3px,-2px)}80%{transform:translate(-1px,1px)}}
 .shake{animation:shake .4s forwards!important}
-#gf{position:fixed;inset:0;z-index:9980;pointer-events:none;opacity:0;background:rgba(255,34,34,.15);transition:opacity .05s}
 
-/* P0 BOOT */
-#p0{position:fixed;inset:0;z-index:800;background:#000;display:flex;flex-direction:column;justify-content:center;padding:10vw;gap:5px}
-.bl{font-size:13px;letter-spacing:.12em;opacity:0;line-height:2.1}
-.bl.s{animation:fi .12s forwards}
-.bl.g{color:#00aa22}.bl.r{color:#cc1111}.bl.w{color:#444}
+/* ─────────────────────── P0  BIOS BOOT ─────────────────────── */
+#p0{position:fixed;inset:0;z-index:800;background:#000;display:flex;flex-direction:column;justify-content:center;padding:clamp(20px,8vw,80px);gap:4px}
+.bl{font-size:clamp(10px,1.3vw,14px);letter-spacing:.1em;opacity:0;line-height:2.2}
+.bl.s{animation:fi .1s forwards}
+.bl.g{color:#00aa22}.bl.r{color:#cc1111}.bl.w{color:#333}.bl.b{color:#0055aa}
 
-/* P1 TERMINAL */
-#p1{position:fixed;inset:0;z-index:700;background:#000;opacity:0;pointer-events:none;display:flex;flex-direction:column;padding:28px}
+/* ─────────────────────── P1  TERMINAL ─────────────────────── */
+#p1{position:fixed;inset:0;z-index:700;background:#000;opacity:0;pointer-events:none;display:flex;flex-direction:column;padding:clamp(12px,2.5vw,28px)}
 #p1.on{opacity:1;pointer-events:auto}
-#th{display:flex;align-items:center;gap:10px;padding-bottom:14px;border-bottom:1px solid #111;margin-bottom:16px}
-.td{width:11px;height:11px;border-radius:50%}.td.r{background:#e74c3c}.td.y{background:#f39c12}.td.gg{background:#27ae60}
-#tt{font-size:10px;letter-spacing:.4em;color:#333;margin:0 auto}
-#tb{flex:1;overflow:hidden;display:flex;flex-direction:column;gap:2px}
-.tl{font-size:12px;line-height:1.9;letter-spacing:.05em;opacity:0}
+#th{display:flex;align-items:center;gap:8px;padding-bottom:12px;border-bottom:1px solid #111;margin-bottom:14px;flex-shrink:0}
+.td{width:10px;height:10px;border-radius:50%;flex-shrink:0}.td.r{background:#e74c3c}.td.y{background:#f39c12}.td.gg{background:#27ae60}
+#tt{font-size:clamp(7px,1vw,10px);letter-spacing:.35em;color:#2a2a2a;margin:0 auto;text-align:center}
+#tb{flex:1;overflow:hidden;display:flex;flex-direction:column;gap:1px}
+.tl{font-size:clamp(10px,1.2vw,13px);line-height:1.9;letter-spacing:.04em;opacity:0;word-break:break-all}
 .tl.s{animation:fi .1s forwards}
-.tl .pr{color:#555}.tl .cm{color:#999}.tl .ok{color:#00cc33}.tl .er{color:#ff3333}.tl .wn{color:#ff8800}.tl .hi{color:#ddd}
-.tl .bc{display:inline-block;width:8px;height:14px;background:#888;animation:blink .6s step-end infinite;vertical-align:middle}
+.tl .pr{color:#555}.tl .cm{color:#888}.tl .ok{color:#00cc33}.tl .er{color:#ff3333}.tl .wn{color:#ff8800}.tl .hi{color:#ddd}
+.tl .bc{display:inline-block;width:7px;height:13px;background:#888;animation:blink .6s step-end infinite;vertical-align:middle}
 
-/* P2 DASHBOARD */
+/* ─────────────────────── BIG VIRUS TEXT (overlay) ─────────────────────── */
+#virus-overlay{
+  position:fixed;inset:0;z-index:750;background:rgba(0,0,0,.92);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(10px,2vw,24px);
+  opacity:0;pointer-events:none;transition:opacity .4s;
+}
+#virus-overlay.on{opacity:1}
+#vbig{
+  font-family:'Orbitron',monospace;
+  font-size:clamp(28px,8vw,100px);
+  font-weight:900;
+  color:var(--r);
+  letter-spacing:.08em;
+  text-align:center;
+  text-shadow:0 0 20px #ff1111,0 0 60px rgba(255,17,17,.7),0 0 120px rgba(255,17,17,.3);
+  animation:vpulse 1s ease-in-out infinite
+}
+@keyframes vpulse{0%,100%{text-shadow:0 0 20px #ff1111,0 0 60px rgba(255,17,17,.7)}50%{text-shadow:0 0 40px #ff1111,0 0 100px rgba(255,17,17,1),0 0 200px rgba(255,17,17,.4)}}
+#vsub{font-size:clamp(9px,1.8vw,18px);letter-spacing:.5em;color:#660000;text-align:center;animation:blink 1.5s step-end infinite}
+#vbar-wrap{width:min(600px,80vw);height:4px;background:#1a0000;position:relative;overflow:hidden}
+#vbar-fill{height:100%;width:0%;background:var(--r);box-shadow:0 0 10px var(--r);transition:width .15s}
+@keyframes vglitch{0%,100%{clip-path:none}10%{clip-path:inset(20% 0 50% 0)}20%{clip-path:inset(70% 0 10% 0)}30%{clip-path:none}}
+#vmod-name{font-size:clamp(9px,1.5vw,14px);letter-spacing:.3em;color:#880000;text-align:center;min-height:1.5em}
+#vpct{font-family:'Orbitron',monospace;font-size:clamp(20px,4vw,48px);color:#cc0000;letter-spacing:.1em;text-shadow:0 0 20px rgba(255,0,0,.5)}
+.vstat-row{display:flex;gap:clamp(16px,3vw,40px);flex-wrap:wrap;justify-content:center}
+.vstat{text-align:center}
+.vstat-v{font-family:'Orbitron',monospace;font-size:clamp(12px,2vw,22px);color:var(--r);display:block;animation:blink 2s step-end infinite}
+.vstat-l{font-size:clamp(7px,1vw,10px);letter-spacing:.3em;color:#440000}
+
+/* ─────────────────────── P2  DASHBOARD ─────────────────────── */
 #p2{position:fixed;inset:0;z-index:600;background:#000;opacity:0;pointer-events:none;display:flex;flex-direction:column}
 #p2.on{opacity:1;pointer-events:auto}
 
 /* TOPBAR */
-#top{display:flex;align-items:center;justify-content:space-between;padding:8px 20px;border-bottom:2px solid #1a0000;background:#020000;flex-shrink:0}
-#top-l{display:flex;align-items:center;gap:14px}
-#top-logo{font-size:10px;letter-spacing:.5em;color:#2a2a2a}
-.badge{font-size:9px;letter-spacing:.3em;padding:3px 10px;border:1px solid}
+#top{display:flex;align-items:center;justify-content:space-between;padding:clamp(5px,1.2vw,10px) clamp(10px,2vw,22px);
+  border-bottom:2px solid #1a0000;background:#020000;flex-shrink:0;flex-wrap:wrap;gap:6px}
+#top-l{display:flex;align-items:center;gap:clamp(6px,1.2vw,14px);flex-wrap:wrap}
+#top-logo{font-size:clamp(7px,1vw,10px);letter-spacing:.5em;color:#2a2a2a}
+.badge{font-size:clamp(7px,.9vw,9px);letter-spacing:.25em;padding:clamp(2px,0.4vw,4px) clamp(6px,1vw,10px);border:1px solid}
 .badge.r{color:var(--r);border-color:#5a0000;background:#0a0000}
 .badge.g{color:var(--g);border-color:#005a00;background:#000a00;animation:blink 1.2s step-end infinite}
 .badge.a{color:var(--a);border-color:#5a3000;background:#0a0500}
-#top-r{font-size:10px;letter-spacing:.2em;color:#2a2a2a}
+.badge.b{color:var(--b);border-color:#003355;background:#000a15;animation:blink 2s step-end infinite}
+#top-r{font-size:clamp(7px,1vw,10px);letter-spacing:.15em;color:#2a2a2a}
 #top-r span{color:#444}
 
 /* GRID */
-#grid{flex:1;display:grid;grid-template-columns:1.1fr 1fr;grid-template-rows:1fr 1fr;overflow:hidden}
-.panel{border:1px solid #0f0000;overflow:hidden;padding:14px 18px;display:flex;flex-direction:column;gap:8px}
-.ptitle{font-size:9px;letter-spacing:.45em;color:#550000;margin-bottom:2px;display:flex;justify-content:space-between}
+#grid{flex:1;display:grid;overflow:hidden;
+  grid-template-columns:1.1fr 1fr;
+  grid-template-rows:1fr 1fr}
+.panel{border:1px solid #0f0000;overflow:hidden;padding:clamp(8px,1.5vw,16px) clamp(10px,1.8vw,18px);display:flex;flex-direction:column;gap:6px}
+.ptitle{font-size:clamp(7px,.9vw,9px);letter-spacing:.4em;color:#550000;margin-bottom:2px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
 .ptitle .rec{color:var(--r);animation:blink .5s step-end infinite}
 
 /* HERO */
 #pan-hero{grid-row:1/2;grid-column:1/2;justify-content:center;align-items:center;background:#020000;border-right:2px solid #1a0000;border-bottom:2px solid #1a0000;position:relative}
 #hero-gl{position:absolute;inset:0;pointer-events:none;overflow:hidden}
-.hgl{position:absolute;left:0;right:0;height:2px;background:rgba(255,34,34,.12);animation:scanl 4s linear infinite}
-.hgl:nth-child(2){animation-delay:-1.5s;background:rgba(255,136,0,.07)}
-.hgl:nth-child(3){animation-delay:-2.8s}
+.hgl{position:absolute;left:0;right:0;height:2px;background:rgba(255,17,17,.1);animation:scanl 5s linear infinite}
+.hgl:nth-child(2){animation-delay:-2s;background:rgba(255,136,0,.06)}
+.hgl:nth-child(3){animation-delay:-3.5s}
 @keyframes scanl{0%{top:-2px}100%{top:100%}}
+
+/* BIG HACKED TEXT */
 #hacked-txt{
-  font-size:clamp(72px,9vw,120px);
-  font-weight:900;
-  letter-spacing:.06em;
-  color:var(--r);
-  text-align:center;
-  line-height:1;
-  text-shadow:0 0 30px rgba(255,34,34,.9),0 0 60px rgba(255,34,34,.5),0 0 100px rgba(255,34,34,.25);
+  font-family:'Orbitron',monospace;
+  font-size:clamp(36px,6.5vw,110px);
+  font-weight:900;letter-spacing:.05em;color:var(--r);text-align:center;line-height:1;
+  text-shadow:0 0 30px rgba(255,17,17,.9),0 0 70px rgba(255,17,17,.5),0 0 120px rgba(255,17,17,.25);
   animation:hpulse 2s ease-in-out infinite
 }
-@keyframes hpulse{0%,100%{opacity:1;text-shadow:0 0 30px rgba(255,34,34,.9),0 0 60px rgba(255,34,34,.5)}50%{opacity:.88;text-shadow:0 0 50px rgba(255,34,34,1),0 0 100px rgba(255,34,34,.7),0 0 160px rgba(255,34,34,.3)}}
-#hacked-line{height:2px;background:var(--r);width:80%;margin:10px auto;box-shadow:0 0 10px var(--r),0 0 20px rgba(255,34,34,.4)}
-#hacked-sub{font-size:11px;letter-spacing:.45em;color:#660000;text-align:center;animation:blink 3s ease-in-out infinite}
-#hacked-stats{display:flex;flex-direction:column;gap:8px;margin-top:16px;width:100%}
-.hs{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #0f0000}
-.hs-k{font-size:9px;letter-spacing:.3em;color:#330000}
-.hs-v{font-size:10px;letter-spacing:.1em;color:#880000}
-.hs-v.live{color:var(--r);animation:blink 1s step-end infinite}
+@keyframes hpulse{0%,100%{opacity:1;text-shadow:0 0 30px rgba(255,17,17,.9),0 0 70px rgba(255,17,17,.5)}50%{opacity:.88;text-shadow:0 0 60px rgba(255,17,17,1),0 0 120px rgba(255,17,17,.8),0 0 200px rgba(255,17,17,.3)}}
+#hacked-line{height:2px;background:var(--r);width:85%;margin:8px auto;box-shadow:0 0 12px var(--r),0 0 30px rgba(255,17,17,.4)}
+#hacked-sub{font-size:clamp(7px,1vw,11px);letter-spacing:.4em;color:#660000;text-align:center;animation:blink 3s ease-in-out infinite}
+
+/* VIRUS INSTALLING LABEL */
+#vi-label{
+  font-family:'Orbitron',monospace;
+  font-size:clamp(9px,1.3vw,15px);
+  font-weight:700;
+  letter-spacing:.3em;
+  color:var(--r);
+  text-align:center;
+  margin-top:6px;
+  text-shadow:0 0 10px var(--r);
+  animation:blink .7s step-end infinite
+}
+
+#hacked-stats{display:flex;flex-direction:column;gap:5px;margin-top:8px;width:100%}
+.hs{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #0f0000}
+.hs-k{font-size:clamp(7px,.9vw,9px);letter-spacing:.25em;color:#330000}
+.hs-v{font-size:clamp(8px,1vw,10px);letter-spacing:.1em;color:#880000}
+.hs-v.live{color:var(--r);animation:blink .9s step-end infinite}
 .hs-v.done{color:#006622}
-#hacked-id{font-size:9px;letter-spacing:.3em;color:#220000;text-align:center;margin-top:12px}
+#hacked-id{font-size:clamp(7px,.9vw,9px);letter-spacing:.25em;color:#220000;text-align:center;margin-top:8px}
 #hacked-id span{color:#440000}
 
 /* FILE TRANSFER */
 #pan-ft{grid-row:1/2;grid-column:2/3;background:#000100;border-bottom:2px solid #001200}
-#ft-route{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.ftn2{text-align:center;padding:5px 10px;border:1px solid #111}
-.ftn2-l{font-size:8px;letter-spacing:.3em;color:#1a1a1a;margin-bottom:3px}
-.ftn2-n{font-size:10px}
+#ft-route{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-shrink:0}
+.ftn2{text-align:center;padding:4px 8px;border:1px solid #111}
+.ftn2-l{font-size:clamp(6px,.8vw,8px);letter-spacing:.28em;color:#1a1a1a;margin-bottom:2px}
+.ftn2-n{font-size:clamp(8px,1vw,10px)}
 .ftn2.src .ftn2-n{color:#cc3300}
 .ftn2.dst .ftn2-n{color:#00aa33}
-#ft-mid{flex:1;position:relative;height:20px;margin:0 10px;display:flex;align-items:center}
+#ft-mid{flex:1;position:relative;height:20px;margin:0 8px;display:flex;align-items:center}
 #ft-line{position:absolute;left:0;right:0;height:1px;background:#0d2a0d}
-.pkt{position:absolute;width:8px;height:8px;background:var(--g);border-radius:50%;top:-3px;box-shadow:0 0 6px var(--g),0 0 12px rgba(0,255,65,.4)}
-#pk1{animation:mv 1.8s linear infinite}
-#pk2{animation:mv 1.8s linear infinite .6s}
-#pk3{animation:mv 1.8s linear infinite 1.2s}
+.pkt{position:absolute;width:7px;height:7px;background:var(--g);border-radius:50%;top:-3px;box-shadow:0 0 6px var(--g)}
+#pk1{animation:mv 1.6s linear infinite}
+#pk2{animation:mv 1.6s linear infinite .53s}
+#pk3{animation:mv 1.6s linear infinite 1.06s}
 @keyframes mv{0%{left:-2%;opacity:0}5%{opacity:1}95%{opacity:1}100%{left:102%;opacity:0}}
-#ft-file{font-size:10px;color:#007722;margin-bottom:5px;min-height:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#ft-track{height:2px;background:#001500;margin-bottom:8px}
-#ft-fill{height:100%;width:0%;background:var(--g);transition:width .25s;box-shadow:0 0 8px rgba(0,255,65,.6)}
-#ft-nums{display:flex;justify-content:space-between;margin-bottom:6px}
-.ftnum{font-size:10px;color:#224422}.ftnum span{color:var(--g)}
-#ft-done{display:flex;flex-direction:column;gap:3px;max-height:90px;overflow:hidden}
-.fdi{font-size:9px;letter-spacing:.05em;display:flex;gap:8px;opacity:0;animation:fi .2s forwards}
+#ft-file{font-size:clamp(8px,1vw,10px);color:#007722;margin-bottom:4px;min-height:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
+#ft-track{height:3px;background:#001500;margin-bottom:6px;flex-shrink:0}
+#ft-fill{height:100%;width:0%;background:var(--g);transition:width .22s;box-shadow:0 0 10px rgba(0,255,65,.7)}
+#ft-nums{display:flex;justify-content:space-between;margin-bottom:5px;flex-shrink:0;flex-wrap:wrap;gap:3px}
+.ftnum{font-size:clamp(8px,1vw,10px);color:#224422}.ftnum span{color:var(--g)}
+#ft-done{display:flex;flex-direction:column;gap:2px;flex:1;overflow:hidden}
+.fdi{font-size:clamp(7px,.9vw,9px);letter-spacing:.04em;display:flex;gap:6px;opacity:0;animation:fi .2s forwards}
 .fdi .ck{color:var(--g)}.fdi .fn{color:#1a4a1a}
 
-/* VIRUS */
+/* VIRUS PANEL */
 #pan-vr{grid-row:2/3;grid-column:1/2;background:#020000;border-right:2px solid #1a0000}
-#vr-mods{display:flex;flex-direction:column;gap:6px;flex:1}
-.vm{display:flex;align-items:center;gap:10px;opacity:.2;transition:opacity .3s}
+/* Big VIRUS INSTALLING text inside panel */
+#vr-big-label{
+  font-family:'Orbitron',monospace;
+  font-size:clamp(10px,1.6vw,18px);
+  font-weight:700;
+  letter-spacing:.25em;
+  color:var(--r);
+  text-shadow:0 0 15px var(--r);
+  text-align:center;
+  padding:4px 0;
+  border:1px solid #2a0000;
+  background:#080000;
+  margin-bottom:6px;
+  flex-shrink:0;
+  animation:blink .6s step-end infinite
+}
+#vr-mods{display:flex;flex-direction:column;gap:4px;flex:1;overflow:hidden}
+.vm{display:flex;align-items:center;gap:8px;opacity:.18;transition:opacity .3s}
 .vm.act{opacity:1}.vm.dn{opacity:.75}
-.vm-dot{width:7px;height:7px;border-radius:50%;background:#1a1a1a;flex-shrink:0}
-.vm.act .vm-dot{background:var(--r);animation:blink .35s step-end infinite;box-shadow:0 0 6px var(--r)}
+.vm-dot{width:6px;height:6px;border-radius:50%;background:#1a1a1a;flex-shrink:0}
+.vm.act .vm-dot{background:var(--r);animation:blink .3s step-end infinite;box-shadow:0 0 8px var(--r)}
 .vm.dn .vm-dot{background:#007722;box-shadow:0 0 4px #007722}
-.vm-name{font-size:10px;letter-spacing:.1em;color:#1e1e1e;flex:1}
+.vm-name{font-size:clamp(8px,1vw,10px);letter-spacing:.08em;color:#1e1e1e;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .vm.act .vm-name{color:#cc2222}.vm.dn .vm-name{color:#005522}
-.vm-bar{width:80px;height:2px;background:#0d0d0d;flex-shrink:0}
+.vm-bar{width:clamp(50px,8vw,80px);height:2px;background:#0d0d0d;flex-shrink:0}
 .vm-fill{height:100%;width:0%;transition:width .08s}
-.vm.act .vm-fill{background:var(--r);box-shadow:0 0 4px var(--r)}
+.vm.act .vm-fill{background:var(--r);box-shadow:0 0 6px var(--r)}
 .vm.dn .vm-fill{background:#007722;width:100%}
-.vm-pct{font-size:10px;color:#1a1a1a;min-width:32px;text-align:right}
+.vm-pct{font-size:clamp(8px,1vw,10px);color:#1a1a1a;min-width:28px;text-align:right}
 .vm.act .vm-pct{color:var(--r)}.vm.dn .vm-pct{color:#007722}
-#vr-ov{margin-top:8px}
-#vr-ov-bar{height:3px;background:#0a0a0a}
-#vr-ov-fill{height:100%;width:0%;background:var(--r);transition:width .5s;box-shadow:0 0 8px rgba(255,34,34,.7)}
-#vr-ov-txt{font-size:10px;color:#440000;margin-top:5px;letter-spacing:.2em}
-#vr-ov-pct{color:var(--r)}
+#vr-ov{margin-top:6px;flex-shrink:0}
+#vr-ov-bar{height:4px;background:#0a0a0a;position:relative;overflow:hidden}
+#vr-ov-fill{height:100%;width:0%;background:var(--r);transition:width .5s;box-shadow:0 0 10px rgba(255,17,17,.8)}
+#vr-ov-txt{font-size:clamp(8px,1vw,10px);color:#440000;margin-top:4px;letter-spacing:.2em;display:flex;justify-content:space-between}
+#vr-ov-pct{color:var(--r);font-family:'Orbitron',monospace}
 
 /* CAM + LOG */
 #pan-cr{grid-row:2/3;grid-column:2/3;background:#000100;padding:0;display:flex;flex-direction:column}
-#cam-lbl{display:flex;justify-content:space-between;align-items:center;padding:9px 14px 6px;border-bottom:1px solid #001200}
-#cam-lbl .l{font-size:9px;letter-spacing:.4em;color:#003300}
-#cam-lbl .r{font-size:9px;color:var(--g);animation:blink .5s step-end infinite;letter-spacing:.2em}
-#cam-cw{position:relative;width:100%;aspect-ratio:16/9;background:#000;flex-shrink:0}
+#cam-lbl{display:flex;justify-content:space-between;align-items:center;padding:7px 12px 5px;border-bottom:1px solid #001200;flex-shrink:0}
+#cam-lbl .l{font-size:clamp(7px,.9vw,9px);letter-spacing:.35em;color:#003300}
+#cam-lbl .r{font-size:clamp(7px,.9vw,9px);color:var(--g);animation:blink .5s step-end infinite;letter-spacing:.2em}
+#cam-cw{position:relative;width:100%;flex-shrink:0;background:#000}
 canvas#cam{display:block;width:100%;height:100%}
 #cam-ov{position:absolute;inset:0;pointer-events:none}
 .cc{position:absolute;width:14px;height:14px;border-color:rgba(0,255,65,.4);border-style:solid}
 .cc.tl{top:6px;left:6px;border-width:1px 0 0 1px}.cc.tr{top:6px;right:6px;border-width:1px 1px 0 0}
 .cc.bl{bottom:6px;left:6px;border-width:0 0 1px 1px}.cc.br{bottom:6px;right:6px;border-width:0 1px 1px 0}
-#cam-scan{position:absolute;left:0;right:0;height:1px;background:rgba(0,255,65,.3);top:0;animation:scan 2.5s linear infinite;box-shadow:0 0 6px rgba(0,255,65,.3)}
+#cam-scan{position:absolute;left:0;right:0;height:1px;background:rgba(0,255,65,.4);top:0;animation:scan 2s linear infinite;box-shadow:0 0 6px rgba(0,255,65,.4)}
 @keyframes scan{0%{top:0}100%{top:100%}}
-#cam-ch::before,#cam-ch::after{content:'';position:absolute;background:rgba(0,255,65,.12)}
+#cam-ch::before,#cam-ch::after{content:'';position:absolute;background:rgba(0,255,65,.1)}
 #cam-ch::before{width:1px;height:100%;left:50%}#cam-ch::after{height:1px;width:100%;top:50%}
 #cam-ch{position:absolute;inset:0}
-#cam-stats{display:flex;justify-content:space-between;padding:5px 14px;border-top:1px solid #001200;flex-shrink:0}
-.cs{font-size:8px;letter-spacing:.18em;color:#002200}.cs span{color:#004400}
-#log-wrap{flex:1;padding:8px 14px;overflow:hidden;display:flex;flex-direction:column}
-#log-title{font-size:9px;letter-spacing:.4em;color:#440000;margin-bottom:6px;flex-shrink:0}
-#log-body{display:flex;flex-direction:column;gap:3px;overflow:hidden;flex:1}
-.lr{display:flex;gap:8px;opacity:0;animation:fi .15s forwards}
-.lt{font-size:8px;color:#1a1a1a;flex-shrink:0;padding-top:1px}
-.lm{font-size:9px;letter-spacing:.06em;line-height:1.6}
-.lm.r{color:#661111}.lm.g{color:#006622}.lm.a{color:#664400}.lm.w{color:#444400}
+#cam-stats{display:flex;justify-content:space-between;padding:4px 12px;border-top:1px solid #001200;flex-shrink:0;flex-wrap:wrap;gap:2px}
+.cs{font-size:clamp(6px,.8vw,8px);letter-spacing:.15em;color:#002200}.cs span{color:#004400}
+#log-wrap{flex:1;padding:6px 12px;overflow:hidden;display:flex;flex-direction:column;min-height:0}
+#log-title{font-size:clamp(7px,.9vw,9px);letter-spacing:.38em;color:#440000;margin-bottom:5px;flex-shrink:0}
+#log-body{display:flex;flex-direction:column;gap:2px;overflow:hidden;flex:1}
+.lr{display:flex;gap:6px;opacity:0;animation:fi .15s forwards}
+.lt{font-size:clamp(6px,.8vw,8px);color:#1a1a1a;flex-shrink:0;padding-top:1px}
+.lm{font-size:clamp(7px,.9vw,9px);letter-spacing:.05em;line-height:1.6}
+.lm.r{color:#661111}.lm.g{color:#006622}.lm.a{color:#664400}
 
 /* BOTTOM */
-#bot{display:flex;align-items:center;justify-content:space-between;padding:7px 20px;border-top:2px solid #1a0000;background:#020000;flex-shrink:0}
-#bot-l{font-size:10px;letter-spacing:.3em;color:var(--r);animation:blink 4s ease-in-out infinite}
-#bot-r{font-size:10px;letter-spacing:.2em;color:#330000}
+#bot{display:flex;align-items:center;justify-content:space-between;padding:clamp(4px,.8vw,8px) clamp(10px,2vw,20px);
+  border-top:2px solid #1a0000;background:#020000;flex-shrink:0;flex-wrap:wrap;gap:4px}
+#bot-l{font-size:clamp(7px,1vw,10px);letter-spacing:.25em;color:var(--r);animation:blink 4s ease-in-out infinite}
+#bot-r{font-size:clamp(7px,1vw,10px);letter-spacing:.2em;color:#330000}
 #bot-r span{color:#660000}
 
-/* P3 LOCKSCREEN */
-#p3{position:fixed;inset:0;z-index:900;background:#000;opacity:0;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:center}
+/* ─────────────────────── P3  LOCK SCREEN ─────────────────────── */
+#p3{position:fixed;inset:0;z-index:900;background:#000;opacity:0;pointer-events:none;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(8px,1.5vw,20px);
+  padding:clamp(20px,5vw,60px)}
 #p3.on{opacity:1;pointer-events:auto}
-#p3::before{content:'';position:fixed;inset:0;pointer-events:none;box-shadow:inset 0 0 100px rgba(255,34,34,.15),inset 0 0 200px rgba(255,34,34,.07)}
-#p3-h{font-size:clamp(90px,13vw,170px);color:var(--r);letter-spacing:.06em;line-height:1;
-  text-shadow:0 0 40px rgba(255,34,34,1),0 0 80px rgba(255,34,34,.7),0 0 120px rgba(255,34,34,.4);
-  animation:hpulse 1.5s ease-in-out infinite;margin-bottom:10px}
-#p3-line{height:2px;width:60%;background:var(--r);margin:0 auto 24px;box-shadow:0 0 12px var(--r)}
-#p3-skull{font-size:clamp(24px,3.5vw,44px);letter-spacing:.6em;color:#440000;margin-bottom:24px}
-#p3-lines{text-align:center;line-height:3;margin-bottom:28px}
-#p3-lines p{font-size:clamp(10px,1.2vw,13px);letter-spacing:.3em;color:#440000}
-#p3-lines p.hi{color:#770000}
-#p3-id{font-size:9px;letter-spacing:.4em;color:#220000;margin-bottom:20px}
+#p3::before{content:'';position:fixed;inset:0;pointer-events:none;
+  box-shadow:inset 0 0 120px rgba(255,17,17,.2),inset 0 0 300px rgba(255,17,17,.08)}
+#p3-skull{font-size:clamp(28px,6vw,72px);letter-spacing:.5em;color:#330000;animation:blink 1s step-end infinite}
+#p3-h{
+  font-family:'Orbitron',monospace;
+  font-size:clamp(48px,11vw,170px);
+  color:var(--r);letter-spacing:.06em;line-height:1;
+  text-shadow:0 0 40px rgba(255,17,17,1),0 0 80px rgba(255,17,17,.7),0 0 160px rgba(255,17,17,.4);
+  animation:hpulse 1.5s ease-in-out infinite;text-align:center
+}
+#p3-virus-line{
+  font-family:'Orbitron',monospace;
+  font-size:clamp(12px,2.5vw,32px);
+  font-weight:700;
+  color:#880000;
+  letter-spacing:.35em;
+  text-align:center;
+  text-shadow:0 0 15px rgba(200,0,0,.5);
+  animation:blink .8s step-end infinite
+}
+#p3-line{height:2px;width:70%;background:var(--r);margin:0 auto;box-shadow:0 0 14px var(--r)}
+#p3-lines{text-align:center;line-height:2.6}
+#p3-lines p{font-size:clamp(9px,1.3vw,13px);letter-spacing:.3em;color:#440000}
+#p3-lines p.hi{color:#880000}
+#p3-id{font-size:clamp(8px,1vw,10px);letter-spacing:.35em;color:#220000}
 #p3-id span{color:#440000}
-#p3-dot{width:6px;height:6px;border-radius:50%;background:var(--r);margin:0 auto;animation:pdot 2s ease-in-out infinite}
-@keyframes pdot{0%{box-shadow:0 0 0 0 rgba(255,34,34,.5)}70%{box-shadow:0 0 0 18px rgba(255,34,34,0)}100%{box-shadow:0 0 0 0 rgba(255,34,34,0)}}
+#p3-dot{width:8px;height:8px;border-radius:50%;background:var(--r);margin:0 auto;animation:pdot 2s ease-in-out infinite}
+@keyframes pdot{0%{box-shadow:0 0 0 0 rgba(255,17,17,.6)}70%{box-shadow:0 0 0 24px rgba(255,17,17,0)}100%{box-shadow:0 0 0 0 rgba(255,17,17,0)}}
+
+/* ─── MOBILE  ─── */
+@media(max-width:640px){
+  #grid{grid-template-columns:1fr;grid-template-rows:auto auto auto auto}
+  #pan-hero{grid-row:1/2;grid-column:1/2;min-height:200px}
+  #pan-ft{grid-row:2/3;grid-column:1/2}
+  #pan-vr{grid-row:3/4;grid-column:1/2}
+  #pan-cr{grid-row:4/5;grid-column:1/2}
+  #cam-cw{max-height:120px}
+  canvas#cam{height:120px;object-fit:cover}
+  #hacked-txt{font-size:clamp(40px,14vw,72px)}
+  #p3-h{font-size:clamp(52px,18vw,100px)}
+  #top-r{display:none}
+  #virus-overlay{padding:20px}
+  #vbig{font-size:clamp(24px,10vw,60px)}
+}
 </style>
 </head>
 <body>
 <div id="cur"></div>
 <div id="gf"></div>
+<div id="glitch-bars"><div class="gb" id="gb1"></div><div class="gb" id="gb2"></div><div class="gb" id="gb3"></div></div>
 
-<!-- P0 BOOT -->
+<!-- P0 BIOS BOOT -->
 <div id="p0">
-  <div class="bl g" id="b0">[ OK ] BIOS POST check passed</div>
-  <div class="bl g" id="b1">[ OK ] Kernel 5.15.0-91-generic loaded</div>
-  <div class="bl g" id="b2">[ OK ] Network interfaces up</div>
-  <div class="bl g" id="b3">[ OK ] Filesystem mounted</div>
-  <div class="bl r" id="b4">[WARN] Unknown process: PID 7741 — ./implant.sh</div>
-  <div class="bl r" id="b5">[CRIT] Rootkit found: /lib/x86_64/.hidden/sys_mod.ko</div>
-  <div class="bl r" id="b6">[CRIT] Outbound shell: 185.220.101.47:4444 — CANNOT BLOCK</div>
-  <div class="bl r" id="b7">[CRIT] Firewall rules flushed by remote process</div>
-  <div class="bl w" id="b8">Emergency shutdown attempt... BLOCKED</div>
+  <div class="bl g"  id="b0">[ OK ] BIOS POST check ............. PASS</div>
+  <div class="bl g"  id="b1">[ OK ] Kernel 5.15.0-91-generic ...... LOADED</div>
+  <div class="bl g"  id="b2">[ OK ] Network interfaces ............ UP</div>
+  <div class="bl g"  id="b3">[ OK ] Filesystem .................... MOUNTED</div>
+  <div class="bl b"  id="b4">[ ?? ] Scanning active connections ...</div>
+  <div class="bl r"  id="b5">[WARN] Unknown process: PID 7741 — ./implant.sh</div>
+  <div class="bl r"  id="b6">[CRIT] Rootkit detected: /lib/x86_64/.hidden/sys_mod.ko</div>
+  <div class="bl r"  id="b7">[CRIT] Outbound shell ACTIVE → 185.220.101.47:4444</div>
+  <div class="bl r"  id="b8">[CRIT] Firewall FLUSHED by remote — cannot restore</div>
+  <div class="bl r"  id="b9">[CRIT] ██ VIRUS PAYLOAD INJECTING — CANNOT STOP ██</div>
+  <div class="bl w"  id="b10">Emergency shutdown ... BLOCKED BY ROOTKIT</div>
 </div>
 
 <!-- P1 TERMINAL -->
 <div id="p1">
   <div id="th">
     <div class="td r"></div><div class="td y"></div><div class="td gg"></div>
-    <div id="tt">bash — 185.220.101.47 — REVERSE SHELL ACTIVE</div>
+    <div id="tt">root@VICTIM — 185.220.101.47 — ☠ REVERSE SHELL ACTIVE ☠</div>
   </div>
   <div id="tb"></div>
+</div>
+
+<!-- VIRUS INSTALLING OVERLAY (between terminal → dashboard) -->
+<div id="virus-overlay">
+  <div id="vbig">⚠ VIRUS INSTALLING ⚠</div>
+  <div id="vsub">SYSTEM INFECTION IN PROGRESS — DO NOT CLOSE</div>
+  <div class="vstat-row">
+    <div class="vstat"><span class="vstat-v" id="vo-files">0</span><span class="vstat-l">FILES INDEXED</span></div>
+    <div class="vstat"><span class="vstat-v" id="vo-pw">0</span><span class="vstat-l">PASSWORDS</span></div>
+    <div class="vstat"><span class="vstat-v" id="vo-mb">0 MB</span><span class="vstat-l">UPLOADING</span></div>
+  </div>
+  <div id="vmod-name">Initializing payload...</div>
+  <div id="vbar-wrap"><div id="vbar-fill"></div></div>
+  <div id="vpct">0%</div>
 </div>
 
 <!-- P2 DASHBOARD -->
 <div id="p2">
   <div id="top">
     <div id="top-l">
-      <div id="top-logo">INTRUSION_MONITOR_v4</div>
-      <div class="badge r">SYSTEM OWNED</div>
+      <div id="top-logo">INTRUSION_MONITOR_v4.2</div>
+      <div class="badge r">☠ SYSTEM OWNED</div>
       <div class="badge g">EXFIL LIVE</div>
       <div class="badge a">ENCRYPTING</div>
+      <div class="badge b">CAM ● ON</div>
     </div>
     <div id="top-r">TIME: <span id="top-t">00:00:00</span> &nbsp;|&nbsp; PKTS: <span id="top-p">0</span> &nbsp;|&nbsp; SENT: <span id="top-d">0 MB</span></div>
   </div>
@@ -223,18 +355,20 @@ canvas#cam{display:block;width:100%;height:100%}
   <div id="grid">
 
     <!-- HERO -->
-    <div class="panel" id="pan-hero" style="justify-content:center;align-items:center">
+    <div class="panel" id="pan-hero">
       <div id="hero-gl"><div class="hgl"></div><div class="hgl"></div><div class="hgl"></div></div>
-      <div style="text-align:center;width:100%">
+      <div style="text-align:center;width:100%;position:relative;z-index:1">
         <div id="hacked-txt">HACKED</div>
         <div id="hacked-line"></div>
         <div id="hacked-sub">YOUR SYSTEM HAS BEEN COMPROMISED</div>
+        <div id="vi-label">⚠ VIRUS INSTALLING ⚠</div>
         <div id="hacked-stats">
-          <div class="hs"><span class="hs-k">FILES INDEXED</span><span class="hs-v">47,291</span></div>
-          <div class="hs"><span class="hs-k">PASSWORDS STOLEN</span><span class="hs-v">52</span></div>
-          <div class="hs"><span class="hs-k">WEBCAM</span><span class="hs-v live">STREAMING NOW</span></div>
-          <div class="hs"><span class="hs-k">MICROPHONE</span><span class="hs-v live">RECORDING</span></div>
-          <div class="hs"><span class="hs-k">ENCRYPTION</span><span class="hs-v live">IN PROGRESS</span></div>
+          <div class="hs"><span class="hs-k">FILES INDEXED</span><span class="hs-v" id="hd-files">47,291</span></div>
+          <div class="hs"><span class="hs-k">PASSWORDS STOLEN</span><span class="hs-v" id="hd-pw">52</span></div>
+          <div class="hs"><span class="hs-k">WEBCAM</span><span class="hs-v live">● STREAMING NOW</span></div>
+          <div class="hs"><span class="hs-k">MICROPHONE</span><span class="hs-v live">● RECORDING</span></div>
+          <div class="hs"><span class="hs-k">ENCRYPTION</span><span class="hs-v live">● IN PROGRESS</span></div>
+          <div class="hs"><span class="hs-k">BANKING DATA</span><span class="hs-v live">● UPLOADING</span></div>
           <div class="hs"><span class="hs-k">SSH KEYS</span><span class="hs-v done">COPIED ✓</span></div>
         </div>
         <div id="hacked-id">SESSION: <span id="h-sid">—</span></div>
@@ -264,29 +398,31 @@ canvas#cam{display:block;width:100%;height:100%}
       <div id="ft-done"></div>
     </div>
 
-    <!-- VIRUS -->
+    <!-- VIRUS PANEL -->
     <div class="panel" id="pan-vr">
-      <div class="ptitle">PAYLOAD INSTALLATION <span id="vr-st" style="color:#660000">RUNNING</span></div>
+      <div class="ptitle">PAYLOAD INSTALLATION <span id="vr-st" style="color:#aa0000;font-family:'Orbitron',monospace">RUNNING</span></div>
+      <div id="vr-big-label">⚠ VIRUS INSTALLING ⚠</div>
       <div id="vr-mods">
-        <div class="vm" id="vm0"><div class="vm-dot"></div><div class="vm-name">keylogger.ko</div><div class="vm-bar"><div class="vm-fill"></div></div><div class="vm-pct">—</div></div>
-        <div class="vm" id="vm1"><div class="vm-dot"></div><div class="vm-name">rootkit_persist.so</div><div class="vm-bar"><div class="vm-fill"></div></div><div class="vm-pct">—</div></div>
-        <div class="vm" id="vm2"><div class="vm-dot"></div><div class="vm-name">cam_intercept.bin</div><div class="vm-bar"><div class="vm-fill"></div></div><div class="vm-pct">—</div></div>
-        <div class="vm" id="vm3"><div class="vm-dot"></div><div class="vm-name">mic_recorder.ko</div><div class="vm-bar"><div class="vm-fill"></div></div><div class="vm-pct">—</div></div>
-        <div class="vm" id="vm4"><div class="vm-dot"></div><div class="vm-name">crypto_wiper.bin</div><div class="vm-bar"><div class="vm-fill"></div></div><div class="vm-pct">—</div></div>
-        <div class="vm" id="vm5"><div class="vm-dot"></div><div class="vm-name">exfil_daemon</div><div class="vm-bar"><div class="vm-fill"></div></div><div class="vm-pct">—</div></div>
-        <div class="vm" id="vm6"><div class="vm-dot"></div><div class="vm-name">ransomware.enc</div><div class="vm-bar"><div class="vm-fill"></div></div><div class="vm-pct">—</div></div>
+        <div class="vm"><div class="vm-dot"></div><div class="vm-name">keylogger.ko</div><div class="vm-bar"><div class="vm-fill"></div></div><div class="vm-pct">—</div></div>
+        <div class="vm"><div class="vm-dot"></div><div class="vm-name">rootkit_persist.so</div><div class="vm-bar"><div class="vm-fill"></div></div><div class="vm-pct">—</div></div>
+        <div class="vm"><div class="vm-dot"></div><div class="vm-name">cam_intercept.bin</div><div class="vm-bar"><div class="vm-fill"></div></div><div class="vm-pct">—</div></div>
+        <div class="vm"><div class="vm-dot"></div><div class="vm-name">mic_recorder.ko</div><div class="vm-bar"><div class="vm-fill"></div></div><div class="vm-pct">—</div></div>
+        <div class="vm"><div class="vm-dot"></div><div class="vm-name">crypto_wiper.bin</div><div class="vm-bar"><div class="vm-fill"></div></div><div class="vm-pct">—</div></div>
+        <div class="vm"><div class="vm-dot"></div><div class="vm-name">exfil_daemon</div><div class="vm-bar"><div class="vm-fill"></div></div><div class="vm-pct">—</div></div>
+        <div class="vm"><div class="vm-dot"></div><div class="vm-name">ransomware.enc</div><div class="vm-bar"><div class="vm-fill"></div></div><div class="vm-pct">—</div></div>
+        <div class="vm"><div class="vm-dot"></div><div class="vm-name">banking_trojan.so</div><div class="vm-bar"><div class="vm-fill"></div></div><div class="vm-pct">—</div></div>
       </div>
       <div id="vr-ov">
         <div id="vr-ov-bar"><div id="vr-ov-fill"></div></div>
-        <div id="vr-ov-txt">OVERALL: <span id="vr-ov-pct">0%</span></div>
+        <div id="vr-ov-txt"><span>VIRUS INSTALL PROGRESS:</span><span id="vr-ov-pct">0%</span></div>
       </div>
     </div>
 
     <!-- CAM + LOG -->
     <div id="pan-cr" class="panel" style="padding:0">
-      <div id="cam-lbl"><span class="l">WEBCAM_INPUT_001</span><span class="r">⬤ STREAMING TO C2</span></div>
+      <div id="cam-lbl"><span class="l">WEBCAM_FEED_001</span><span class="r">⬤ STREAMING TO C2</span></div>
       <div id="cam-cw">
-        <canvas id="cam" width="640" height="360"></canvas>
+        <canvas id="cam" width="640" height="200"></canvas>
         <div id="cam-ov">
           <div id="cam-ch"></div>
           <div id="cam-scan"></div>
@@ -301,7 +437,7 @@ canvas#cam{display:block;width:100%;height:100%}
         <div class="cs">FACE: <span style="color:#00aa33">DETECTED</span></div>
       </div>
       <div id="log-wrap">
-        <div id="log-title">ACCESS LOG</div>
+        <div id="log-title">⚠ LIVE INTRUSION LOG</div>
         <div id="log-body"></div>
       </div>
     </div>
@@ -309,20 +445,22 @@ canvas#cam{display:block;width:100%;height:100%}
   </div>
 
   <div id="bot">
-    <div id="bot-l">⚠  DO NOT POWER OFF — DO NOT CLOSE — RECOVERY IMPOSSIBLE</div>
+    <div id="bot-l">⚠ DO NOT POWER OFF — DO NOT CLOSE — RECOVERY IMPOSSIBLE ⚠</div>
     <div id="bot-r">ENCRYPTED: <span id="bot-enc">0</span> FILES</div>
   </div>
 </div>
 
-<!-- P3 LOCKSCREEN -->
+<!-- P3 LOCK SCREEN -->
 <div id="p3">
-  <div id="p3-h">HACKED</div>
-  <div id="p3-line"></div>
   <div id="p3-skull">☠ &nbsp; ☠ &nbsp; ☠</div>
+  <div id="p3-h">HACKED</div>
+  <div id="p3-virus-line">⚠ VIRUS SUCCESSFULLY INSTALLED ⚠</div>
+  <div id="p3-line"></div>
   <div id="p3-lines">
     <p class="hi">ALL YOUR FILES HAVE BEEN ENCRYPTED</p>
     <p class="hi">ALL PASSWORDS HAVE BEEN STOLEN</p>
     <p class="hi">YOUR CAMERA WAS RECORDED</p>
+    <p class="hi">BANKING DATA UPLOADED TO C2</p>
     <p>YOUR DATA IS NOW ON OUR SERVERS</p>
     <p>THERE IS NO WAY BACK</p>
   </div>
@@ -333,50 +471,74 @@ canvas#cam{display:block;width:100%;height:100%}
 <script>
 (function(){
 const R=Math.random.bind(Math),ri=(a,b)=>Math.floor(R()*(b-a+1)+a),pad=n=>String(n).padStart(2,'0'),qs=s=>document.querySelector(s);
+
+/* Custom cursor (desktop) */
 document.addEventListener('mousemove',e=>{const c=qs('#cur');c.style.left=e.clientX+'px';c.style.top=e.clientY+'px'});
+
+/* Glitch flash */
 function glitch(d=80){const g=qs('#gf');g.style.opacity='.22';setTimeout(()=>g.style.opacity='0',d)}
+
+/* Shake */
 function shake(){document.body.classList.add('shake');setTimeout(()=>document.body.classList.remove('shake'),400)}
 
+/* Random glitch bars */
+function triggerBars(){
+  [1,2,3].forEach(n=>{
+    const el=qs('#gb'+n);
+    const top=ri(0,95);const h=ri(1,4);
+    el.style.top=top+'%';el.style.height=h+'px';el.style.opacity='1';
+    setTimeout(()=>el.style.opacity='0',ri(40,100));
+  });
+  setTimeout(triggerBars,ri(400,1800));
+}
+triggerBars();
+
+/* Session ID */
 qs('#h-sid').textContent=Array.from({length:16},()=>ri(0,15).toString(16)).join('').toUpperCase();
 
-/* P0 */
-['b0','b1','b2','b3','b4','b5','b6','b7','b8'].forEach((id,i)=>{
-  setTimeout(()=>{qs('#'+id).classList.add('s');if(i>3)glitch(50)},i*320);
+/* ─── P0 BOOT ─── */
+const bootIds=['b0','b1','b2','b3','b4','b5','b6','b7','b8','b9','b10'];
+bootIds.forEach((id,i)=>{
+  setTimeout(()=>{
+    const el=qs('#'+id);if(el){el.classList.add('s');if(i>3)glitch(40);}
+  },i*300+100);
 });
 setTimeout(()=>{
-  glitch(150);shake();
+  glitch(160);shake();
   const p0=qs('#p0');p0.style.transition='opacity .5s';p0.style.opacity='0';
   setTimeout(()=>p0.style.display='none',500);
   qs('#p1').classList.add('on');
   runTerm();
-},3400);
+},bootIds.length*300+600);
 
-/* P1 TERMINAL */
+/* ─── P1 TERMINAL ─── */
 function runTerm(){
   const tb=qs('#tb');
   const lines=[
     {d:0,   h:'<span class="pr">attacker@kali:~$</span> <span class="cm">nc -lvnp 4444</span>'},
-    {d:400, h:'<span class="ok">Connection received from 192.168.1.12:49221</span>'},
-    {d:700, h:'<span class="pr">root@victim:~#</span> <span class="cm">id && whoami</span>'},
-    {d:950, h:'<span class="hi">uid=0(root) gid=0(root) — root</span>'},
-    {d:1300,h:'<span class="pr">root@victim:~#</span> <span class="cm">uname -a && cat /etc/os-release | head -1</span>'},
-    {d:1600,h:'<span class="hi">Linux user-ThinkPad 5.15.0-91-generic x86_64<br>NAME="Ubuntu 22.04.3 LTS"</span>'},
-    {d:2000,h:'<span class="pr">root@victim:~#</span> <span class="cm">python3 dump_creds.py --all</span>'},
-    {d:2400,h:'<span class="ok">[+] Chrome saved passwords: 34</span>'},
-    {d:2600,h:'<span class="ok">[+] Firefox saved passwords: 18</span>'},
-    {d:2800,h:'<span class="ok">[+] SSH keys found: /home/user/.ssh/id_rsa</span>'},
-    {d:3100,h:'<span class="ok">[+] Wallet backups: 2 found</span>'},
-    {d:3500,h:'<span class="pr">root@victim:~#</span> <span class="cm">./deploy.sh --all-modules --silent</span>'},
-    {d:3900,h:'<span class="wn">Deploying to /lib/x86_64/.sys/ ...</span>'},
-    {d:4200,h:'<span class="ok">[✓] keylogger.ko — INSTALLED</span>'},
-    {d:4450,h:'<span class="ok">[✓] rootkit_persist.so — INSTALLED</span>'},
-    {d:4700,h:'<span class="ok">[✓] cam_intercept.bin — INSTALLED</span>'},
-    {d:4950,h:'<span class="ok">[✓] ransomware.enc — INSTALLED</span>'},
-    {d:5300,h:'<span class="pr">root@victim:~#</span> <span class="cm">./start_exfil.sh --encrypt aes256 --compress &</span>'},
-    {d:5700,h:'<span class="er">[!] Exfiltration started — 47,291 files queued</span>'},
-    {d:6100,h:'<span class="er">[!] File encryption started — AES-256-CBC</span>'},
-    {d:6500,h:'<span class="er">[!] Webcam stream active → 185.220.101.47:5555</span>'},
-    {d:6900,h:'<span class="bc"></span>'},
+    {d:350, h:'<span class="ok">Connection received from 192.168.1.12:49221</span>'},
+    {d:650, h:'<span class="pr">root@victim:~#</span> <span class="cm">id && whoami</span>'},
+    {d:900, h:'<span class="hi">uid=0(root) gid=0(root) — root</span>'},
+    {d:1200,h:'<span class="pr">root@victim:~#</span> <span class="cm">uname -a</span>'},
+    {d:1480,h:'<span class="hi">Linux ThinkPad 5.15.0-91-generic x86_64 — Ubuntu 22.04</span>'},
+    {d:1800,h:'<span class="pr">root@victim:~#</span> <span class="cm">python3 dump_creds.py --all</span>'},
+    {d:2200,h:'<span class="ok">[+] Chrome saved passwords: 34</span>'},
+    {d:2500,h:'<span class="ok">[+] Firefox saved passwords: 18</span>'},
+    {d:2750,h:'<span class="ok">[+] SSH keys found: /home/user/.ssh/id_rsa</span>'},
+    {d:3050,h:'<span class="ok">[+] Wallet backups: 2 found</span>'},
+    {d:3300,h:'<span class="ok">[+] Banking cookies: 8 sessions captured</span>'},
+    {d:3700,h:'<span class="pr">root@victim:~#</span> <span class="cm">./deploy_virus.sh --all-modules --silent</span>'},
+    {d:4100,h:'<span class="wn">⚠ DEPLOYING VIRUS TO /lib/x86_64/.sys/ ...</span>'},
+    {d:4400,h:'<span class="er">[✓] keylogger.ko ——————— VIRUS INSTALLED</span>'},
+    {d:4650,h:'<span class="er">[✓] rootkit_persist.so —— VIRUS INSTALLED</span>'},
+    {d:4900,h:'<span class="er">[✓] cam_intercept.bin ——— VIRUS INSTALLED</span>'},
+    {d:5150,h:'<span class="er">[✓] ransomware.enc ———— VIRUS INSTALLED</span>'},
+    {d:5450,h:'<span class="er">[✓] banking_trojan.so —— VIRUS INSTALLED</span>'},
+    {d:5800,h:'<span class="pr">root@victim:~#</span> <span class="cm">./start_exfil.sh --encrypt aes256 &</span>'},
+    {d:6200,h:'<span class="er">[!] EXFILTRATION STARTED — 47,291 files queued</span>'},
+    {d:6600,h:'<span class="er">[!] FILE ENCRYPTION STARTED — AES-256-CBC</span>'},
+    {d:7000,h:'<span class="er">[!] WEBCAM STREAM → 185.220.101.47:5555</span>'},
+    {d:7400,h:'<span class="bc"></span>'},
   ];
   lines.forEach(l=>{
     setTimeout(()=>{
@@ -384,20 +546,57 @@ function runTerm(){
       tb.appendChild(d);tb.scrollTop=tb.scrollHeight;
     },l.d);
   });
+
+  /* Show virus overlay at ~4s into terminal */
+  setTimeout(()=>{
+    const vo=qs('#virus-overlay');vo.classList.add('on');
+    animateVirusOverlay();
+  },3700);
+
+  setTimeout(()=>{
+    const vo=qs('#virus-overlay');vo.style.transition='opacity .5s';vo.style.opacity='0';
+    setTimeout(()=>vo.classList.remove('on'),500);
+  },7000);
+
   setTimeout(()=>{
     glitch(160);shake();
     const p1=qs('#p1');p1.style.transition='opacity .6s';p1.style.opacity='0';
     setTimeout(()=>p1.style.display='none',600);
     qs('#p2').classList.add('on');
     startDash();
-  },7600);
+  },7800);
 }
 
-/* DASHBOARD */
+/* Virus overlay counter animation */
+function animateVirusOverlay(){
+  const mods=['keylogger.ko','rootkit_persist.so','cam_intercept.bin','ransomware.enc','banking_trojan.so'];
+  let i=0,pct=0;
+  const bar=qs('#vbar-fill'),pctEl=qs('#vpct'),modEl=qs('#vmod-name');
+  const filesEl=qs('#vo-files'),pwEl=qs('#vo-pw'),mbEl=qs('#vo-mb');
+  let files=0,pw=0,mb=0;
+
+  const iv=setInterval(()=>{
+    pct=Math.min(100,pct+R()*2.5+0.5);
+    bar.style.width=pct+'%';
+    pctEl.textContent=Math.floor(pct)+'%';
+    files+=ri(100,800);pw+=ri(0,3);mb+=R()*.4;
+    filesEl.textContent=files.toLocaleString();
+    pwEl.textContent=pw;
+    mbEl.textContent=mb.toFixed(1)+' MB';
+    if(pct>=100){clearInterval(iv);modEl.textContent='⚠ ALL VIRUS MODULES INSTALLED ⚠';}
+    else if(pct>Math.floor((i+1)/mods.length*100)-5){
+      modEl.textContent='Installing: '+mods[Math.min(i,mods.length-1)]+'...';
+      i=Math.min(i+1,mods.length-1);
+    }
+    if(R()<.1){glitch(50);}
+  },50);
+}
+
+/* ─── P2 DASHBOARD ─── */
 function startDash(){
   let sec=0,pkts=0,mb=0,enc=0;
   setInterval(()=>{
-    sec++;pkts+=ri(100,500);mb+=R()*.8+.1;enc+=ri(40,250);
+    sec++;pkts+=ri(100,600);mb+=R()*.9+.1;enc+=ri(50,300);
     qs('#top-t').textContent=pad(Math.floor(sec/3600))+':'+pad(Math.floor((sec%3600)/60))+':'+pad(sec%60);
     qs('#top-p').textContent=pkts.toLocaleString();
     qs('#top-d').textContent=mb.toFixed(1)+' MB';
@@ -405,77 +604,90 @@ function startDash(){
     qs('#bot-enc').textContent=enc.toLocaleString();
   },1000);
 
-  /* CAM */
-  const cv=qs('#cam'),cx=cv.getContext('2d');cv.width=640;cv.height=360;
+  /* Cam canvas */
+  const cv=qs('#cam'),cx=cv.getContext('2d');cv.width=640;cv.height=200;
   function drawCam(){
-    const id=cx.createImageData(640,360);
-    for(let i=0;i<id.data.length;i+=4){const v=ri(0,16);id.data[i]=v;id.data[i+1]=v+1;id.data[i+2]=v;id.data[i+3]=255}
+    const id=cx.createImageData(640,200);
+    for(let i=0;i<id.data.length;i+=4){const v=ri(0,18);id.data[i]=v;id.data[i+1]=v+1;id.data[i+2]=v;id.data[i+3]=255}
     cx.putImageData(id,0,0);
-    cx.save();cx.globalAlpha=0.055+Math.sin(Date.now()*.001)*.025;cx.fillStyle='#fff';
-    cx.beginPath();cx.ellipse(320,290,115,36,0,0,Math.PI*2);cx.fill();
-    cx.beginPath();cx.ellipse(320,188,52,64,0,0,Math.PI*2);cx.fill();
+    cx.save();cx.globalAlpha=0.06+Math.sin(Date.now()*.0012)*.03;cx.fillStyle='#fff';
+    cx.beginPath();cx.ellipse(320,175,110,30,0,0,Math.PI*2);cx.fill();
+    cx.beginPath();cx.ellipse(320,105,50,60,0,0,Math.PI*2);cx.fill();
     cx.restore();
-    if(R()<.05){cx.fillStyle='rgba(0,255,65,0.025)';cx.fillRect(0,ri(0,360),640,ri(1,2))}
+    if(R()<.06){cx.fillStyle='rgba(0,255,65,0.03)';cx.fillRect(0,ri(0,200),640,ri(1,3))}
     requestAnimationFrame(drawCam);
   }
   drawCam();
 
-  /* FILES */
+  /* File transfer */
   const files=[
     {n:'NID_front.jpg',s:2.4},{n:'NID_back.jpg',s:2.1},{n:'bank_stmt_2024.pdf',s:4.8},
     {n:'salary_slip.pdf',s:1.2},{n:'photos_family.zip',s:128.4},{n:'wallet_backup.dat',s:0.8},
     {n:'chrome_passwords.txt',s:0.3},{n:'ssh_keys.tar.gz',s:0.1},{n:'Documents.zip',s:340.2},
     {n:'messages_backup.db',s:18.6},{n:'video_personal.mp4',s:892.1},{n:'.bash_history',s:0.05},
+    {n:'credit_card_info.txt',s:0.02},{n:'tax_return_2023.pdf',s:3.4},
   ];
   let ftMb=0,ftCnt=0;
   const ftDone=qs('#ft-done');
   function runFile(i){
-    if(i>=files.length){qs('#ft-file').textContent='EXFILTRATION COMPLETE';qs('#ft-file').style.color='#00cc33';setTimeout(goLock,2500);return}
-    const f=files[i];const spd=(R()*600+150).toFixed(0);
+    if(i>=files.length){
+      qs('#ft-file').textContent='EXFILTRATION COMPLETE';
+      qs('#ft-file').style.color='#00cc33';
+      setTimeout(goLock,2500);return;
+    }
+    const f=files[i];const spd=(R()*700+150).toFixed(0);
     qs('#ft-file').textContent=f.n;qs('#ft-spd').textContent=spd+' KB/s';
     let p=0;
     function tick(){
-      p=Math.min(100,p+R()*3.5+.8);qs('#ft-fill').style.width=p+'%';
-      ftMb+=f.s/100*.045;qs('#ft-mb').textContent=ftMb.toFixed(1)+' MB';
-      if(p<100)setTimeout(tick,ri(25,80));
+      p=Math.min(100,p+R()*3.8+.7);qs('#ft-fill').style.width=p+'%';
+      ftMb+=f.s/100*.05;qs('#ft-mb').textContent=ftMb.toFixed(1)+' MB';
+      if(p<100)setTimeout(tick,ri(20,70));
       else{
         ftCnt++;qs('#ft-cnt').textContent=ftCnt;
         const el=document.createElement('div');el.className='fdi';
         el.innerHTML=`<span class="ck">✓</span><span class="fn">${f.n}</span>`;
-        ftDone.prepend(el);if(ftDone.children.length>5)ftDone.lastChild.remove();
-        setTimeout(()=>runFile(i+1),ri(150,600));
+        ftDone.prepend(el);if(ftDone.children.length>6)ftDone.lastChild.remove();
+        setTimeout(()=>runFile(i+1),ri(120,500));
       }
     }
     tick();
   }
-  setTimeout(()=>runFile(0),1200);
+  setTimeout(()=>runFile(0),1000);
 
-  /* VIRUS MODS */
+  /* Virus module progress */
   const mods=document.querySelectorAll('.vm');
   function installMod(i){
-    if(i>=mods.length){qs('#vr-st').textContent='COMPLETE';qs('#vr-ov-fill').style.width='100%';qs('#vr-ov-pct').textContent='100%';return}
+    if(i>=mods.length){
+      qs('#vr-st').textContent='COMPLETE';
+      qs('#vr-ov-fill').style.width='100%';
+      qs('#vr-ov-pct').textContent='100%';
+      qs('#vr-big-label').textContent='✓ VIRUS INSTALLED ✓';
+      return;
+    }
     mods[i].classList.add('act');
-    let p=0;const fill=mods[i].querySelector('.vm-fill'),pct=mods[i].querySelector('.vm-pct');
+    let p=0;
+    const fill=mods[i].querySelector('.vm-fill'),pct=mods[i].querySelector('.vm-pct');
     function tick(){
-      p=Math.min(100,p+R()*2.5+.5);fill.style.width=p+'%';pct.textContent=Math.floor(p)+'%';
+      p=Math.min(100,p+R()*2.8+.5);fill.style.width=p+'%';pct.textContent=Math.floor(p)+'%';
       const ov=((i+(p/100))/mods.length)*100;
       qs('#vr-ov-fill').style.width=ov+'%';qs('#vr-ov-pct').textContent=Math.floor(ov)+'%';
-      if(p<100)setTimeout(tick,ri(35,110));
-      else{mods[i].classList.remove('act');mods[i].classList.add('dn');pct.textContent='OK';setTimeout(()=>installMod(i+1),ri(250,700))}
+      if(p<100)setTimeout(tick,ri(30,100));
+      else{mods[i].classList.remove('act');mods[i].classList.add('dn');pct.textContent='OK';setTimeout(()=>installMod(i+1),ri(200,600));}
     }
     tick();
   }
-  setTimeout(()=>installMod(0),1800);
+  setTimeout(()=>installMod(0),1600);
 
-  /* LOG */
+  /* Live log */
   const logs=[
-    {m:'/etc/shadow — 847 hashes extracted',c:'r'},{m:'chrome keychain decrypted',c:'r'},
-    {m:'clipboard hijack active',c:'r'},{m:'microphone recording: ON',c:'r'},
-    {m:'webcam → 185.220.101.47:5555',c:'r'},{m:'ssh authorized_keys replaced',c:'r'},
-    {m:'iptables rules flushed',c:'a'},{m:'cron persistence installed',c:'a'},
-    {m:'all traffic mirrored',c:'a'},{m:'browser history uploaded',c:'g'},
-    {m:'contacts: 312 entries stolen',c:'g'},{m:'location history: 90 days',c:'g'},
-    {m:'banking cookies: 8 captured',c:'r'},{m:'call logs extracted',c:'g'},
+    {m:'/etc/shadow — 847 hashes extracted',c:'r'},{m:'Chrome keychain decrypted',c:'r'},
+    {m:'Clipboard hijack ACTIVE',c:'r'},{m:'Microphone recording: ON',c:'r'},
+    {m:'Webcam → 185.220.101.47:5555',c:'r'},{m:'SSH authorized_keys REPLACED',c:'r'},
+    {m:'iptables rules FLUSHED',c:'a'},{m:'Cron persistence INSTALLED',c:'a'},
+    {m:'All traffic MIRRORED',c:'a'},{m:'Browser history UPLOADED',c:'g'},
+    {m:'Contacts: 312 entries stolen',c:'g'},{m:'Location history: 90 days',c:'g'},
+    {m:'Banking cookies: 8 captured',c:'r'},{m:'Call logs extracted',c:'g'},
+    {m:'Credit card data → C2',c:'r'},{m:'Selfie cam screenshots: 14',c:'r'},
   ];
   const lb=qs('#log-body');
   function addLog(i){
@@ -483,16 +695,17 @@ function startDash(){
     const now=new Date(),ts=pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());
     const row=document.createElement('div');row.className='lr';
     row.innerHTML=`<span class="lt">${ts}</span><span class="lm ${logs[i].c}">${logs[i].m}</span>`;
-    lb.prepend(row);if(lb.children.length>7)lb.lastChild.remove();
-    setTimeout(()=>addLog(i+1),ri(1200,3200));
+    lb.prepend(row);if(lb.children.length>8)lb.lastChild.remove();
+    setTimeout(()=>addLog(i+1),ri(1000,2800));
   }
-  setTimeout(()=>addLog(0),800);
+  setTimeout(()=>addLog(0),700);
 
-  function sched(){glitch(ri(50,120));shake();setTimeout(sched,ri(5000,12000))}
-  setTimeout(sched,ri(3000,5000));
+  /* Periodic glitch */
+  function sched(){glitch(ri(60,130));shake();setTimeout(sched,ri(4000,10000));}
+  setTimeout(sched,ri(2500,4000));
 }
 
-/* LOCK */
+/* ─── P3 LOCK ─── */
 function goLock(){
   glitch(200);shake();
   qs('#p2').style.transition='opacity 1.2s';qs('#p2').style.opacity='0';
